@@ -67,6 +67,9 @@ defmodule PhoenixKitReferrals do
 
   use Ecto.Schema
   use PhoenixKit.Module
+  # Gettext macros bound to the module's own catalogs, for the permission
+  # metadata label/description (resolved at call time = render time).
+  use Gettext, backend: PhoenixKitReferrals.Gettext
 
   import Ecto.Changeset
   import Ecto.Query, warn: false
@@ -647,9 +650,9 @@ defmodule PhoenixKitReferrals do
   def permission_metadata do
     %{
       key: "referrals",
-      label: "Referrals",
+      label: gettext("Referrals"),
       icon: "hero-gift",
-      description: "Referrals, tracking, and reward programs"
+      description: gettext("Referrals, tracking, and reward programs")
     }
   end
 
