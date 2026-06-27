@@ -5,6 +5,8 @@ defmodule PhoenixKitReferrals.Web.Settings do
   Provides module-level configuration and management for the referral codes system.
   """
   use PhoenixKitWeb, :live_view
+  # Rebind gettext macros to the referrals module's own catalogs (priv/gettext).
+  use Gettext, backend: PhoenixKitReferrals.Gettext
 
   alias PhoenixKit.Settings
   alias PhoenixKitReferrals, as: Referrals
@@ -18,7 +20,7 @@ defmodule PhoenixKitReferrals.Web.Settings do
 
     socket =
       socket
-      |> assign(:page_title, "Referrals")
+      |> assign(:page_title, gettext("Referrals"))
       |> assign(:project_title, project_title)
       |> assign(:referral_codes_enabled, referral_codes_config.enabled)
       |> assign(:referral_codes_required, referral_codes_config.required)
@@ -46,15 +48,17 @@ defmodule PhoenixKitReferrals.Web.Settings do
           |> put_flash(
             :info,
             if(new_required,
-              do: "Referrals are now required",
-              else: "Referrals are now optional"
+              do: gettext("Referrals are now required"),
+              else: gettext("Referrals are now optional")
             )
           )
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        socket = put_flash(socket, :error, "Failed to update referrals requirement setting")
+        socket =
+          put_flash(socket, :error, gettext("Failed to update referrals requirement setting"))
+
         {:noreply, socket}
     end
   end
@@ -67,17 +71,24 @@ defmodule PhoenixKitReferrals.Web.Settings do
             socket =
               socket
               |> assign(:max_uses_per_code, max_uses)
-              |> put_flash(:info, "Maximum uses per referral updated to #{max_uses}")
+              |> put_flash(
+                :info,
+                gettext("Maximum uses per referral updated to %{count}", count: max_uses)
+              )
 
             {:noreply, socket}
 
           {:error, _changeset} ->
-            socket = put_flash(socket, :error, "Failed to update maximum uses per referral")
+            socket =
+              put_flash(socket, :error, gettext("Failed to update maximum uses per referral"))
+
             {:noreply, socket}
         end
 
       _ ->
-        socket = put_flash(socket, :error, "Please enter a valid number between 1 and 10,000")
+        socket =
+          put_flash(socket, :error, gettext("Please enter a valid number between 1 and 10,000"))
+
         {:noreply, socket}
     end
   end
@@ -90,17 +101,24 @@ defmodule PhoenixKitReferrals.Web.Settings do
             socket =
               socket
               |> assign(:max_codes_per_user, max_codes)
-              |> put_flash(:info, "Maximum referrals per user updated to #{max_codes}")
+              |> put_flash(
+                :info,
+                gettext("Maximum referrals per user updated to %{count}", count: max_codes)
+              )
 
             {:noreply, socket}
 
           {:error, _changeset} ->
-            socket = put_flash(socket, :error, "Failed to update maximum referrals per user")
+            socket =
+              put_flash(socket, :error, gettext("Failed to update maximum referrals per user"))
+
             {:noreply, socket}
         end
 
       _ ->
-        socket = put_flash(socket, :error, "Please enter a valid number between 1 and 1,000")
+        socket =
+          put_flash(socket, :error, gettext("Please enter a valid number between 1 and 1,000"))
+
         {:noreply, socket}
     end
   end

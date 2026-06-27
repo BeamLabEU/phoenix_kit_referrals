@@ -5,6 +5,8 @@ defmodule PhoenixKitReferrals.Web.List do
   Displays and manages referral codes associated with users.
   """
   use PhoenixKitWeb, :live_view
+  # Rebind gettext macros to the referrals module's own catalogs (priv/gettext).
+  use Gettext, backend: PhoenixKitReferrals.Gettext
 
   alias PhoenixKit.Settings
   alias PhoenixKitReferrals, as: Referrals
@@ -21,8 +23,8 @@ defmodule PhoenixKitReferrals.Web.List do
 
     socket =
       socket
-      |> assign(:page_title, "Referrals")
-      |> assign(:page_subtitle, "Issue and track referrals for user registration")
+      |> assign(:page_title, gettext("Referrals"))
+      |> assign(:page_subtitle, gettext("Issue and track referrals for user registration"))
       |> assign(:project_title, project_title)
       |> assign(:codes, codes)
       |> assign(:system_stats, system_stats)
@@ -42,14 +44,14 @@ defmodule PhoenixKitReferrals.Web.List do
       {:ok, _code} ->
         socket =
           socket
-          |> put_flash(:info, "Referral deleted successfully")
+          |> put_flash(:info, gettext("Referral deleted successfully"))
           |> assign(:codes, Referrals.list_codes())
           |> assign(:system_stats, Referrals.get_system_stats())
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        socket = put_flash(socket, :error, "Failed to delete referral")
+        socket = put_flash(socket, :error, gettext("Failed to delete referral"))
         {:noreply, socket}
     end
   end
@@ -60,18 +62,19 @@ defmodule PhoenixKitReferrals.Web.List do
 
     case Referrals.update_code(code, %{status: new_status}) do
       {:ok, _code} ->
-        status_text = if new_status, do: "activated", else: "deactivated"
+        message =
+          if new_status, do: gettext("Referral activated"), else: gettext("Referral deactivated")
 
         socket =
           socket
-          |> put_flash(:info, "Referral #{status_text}")
+          |> put_flash(:info, message)
           |> assign(:codes, Referrals.list_codes())
           |> assign(:system_stats, Referrals.get_system_stats())
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        socket = put_flash(socket, :error, "Failed to update referral status")
+        socket = put_flash(socket, :error, gettext("Failed to update referral status"))
         {:noreply, socket}
     end
   end
@@ -81,23 +84,26 @@ defmodule PhoenixKitReferrals.Web.List do
   # tables' card view.
   defp code_card_fields(code) do
     [
-      %{label: "Description", value: code.description},
-      %{label: "Usage", value: "#{code.number_of_uses} / #{code.max_uses}"},
-      %{label: "Expiration", value: expiration_text(code.expiration_date)},
-      %{label: "Status", value: if(code.status, do: "Active", else: "Inactive")},
-      %{label: "Created By", value: creator_email(code)},
-      %{label: "Beneficiary", value: beneficiary_email(code)}
+      %{label: gettext("Description"), value: code.description},
+      %{label: gettext("Usage"), value: "#{code.number_of_uses} / #{code.max_uses}"},
+      %{label: gettext("Expiration"), value: expiration_text(code.expiration_date)},
+      %{
+        label: gettext("Status"),
+        value: if(code.status, do: gettext("Active"), else: gettext("Inactive"))
+      },
+      %{label: gettext("Created By"), value: creator_email(code)},
+      %{label: gettext("Beneficiary"), value: beneficiary_email(code)}
     ]
   end
 
-  defp expiration_text(nil), do: "Never"
+  defp expiration_text(nil), do: gettext("Never")
   defp expiration_text(date), do: Calendar.strftime(date, "%b %d, %Y")
 
   defp creator_email(%{creator: %{email: email}}) when is_binary(email), do: email
-  defp creator_email(_), do: "Unknown"
+  defp creator_email(_), do: gettext("Unknown")
 
   defp beneficiary_email(%{beneficiary_user: %{email: email}}) when is_binary(email), do: email
-  defp beneficiary_email(_), do: "None"
+  defp beneficiary_email(_), do: gettext("None")
 
   # Row actions, shared between the desktop table cell and the mobile card
   # footer so both stay in sync.
@@ -118,14 +124,14 @@ defmodule PhoenixKitReferrals.Web.List do
         phx-click="toggle_code_status"
         phx-value-uuid={@code.uuid}
       >
-        {if @code.status, do: "Deactivate", else: "Activate"}
+        {if @code.status, do: gettext("Deactivate"), else: gettext("Activate")}
       </button>
 
       <button
         class="btn btn-sm btn-error"
         phx-click="delete_code"
         phx-value-uuid={@code.uuid}
-        onclick="return confirm('Are you sure you want to delete this referral?')"
+        onclick={"return confirm('#{gettext("Are you sure you want to delete this referral?")}')"}
       >
         <.icon name="hero-trash" class="w-4 h-4" />
       </button>

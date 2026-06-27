@@ -5,6 +5,8 @@ defmodule PhoenixKitReferrals.Web.Form do
   Provides form interface for creating and editing user referral codes.
   """
   use PhoenixKitWeb, :live_view
+  # Rebind gettext macros to the referrals module's own catalogs (priv/gettext).
+  use Gettext, backend: PhoenixKitReferrals.Gettext
 
   require Logger
 
@@ -285,13 +287,13 @@ defmodule PhoenixKitReferrals.Web.Form do
     case Referrals.create_code(code_params_with_creator) do
       {:ok, _code} ->
         socket
-        |> put_flash(:info, "Referral created successfully!")
+        |> put_flash(:info, gettext("Referral created successfully!"))
         |> push_navigate(to: Paths.index())
 
       {:error, changeset} ->
         socket
         |> assign(:changeset, changeset)
-        |> put_flash(:error, "Failed to create referral. Please check the errors below.")
+        |> put_flash(:error, gettext("Failed to create referral. Please check the errors below."))
     end
   end
 
@@ -299,17 +301,17 @@ defmodule PhoenixKitReferrals.Web.Form do
     case Referrals.update_code(socket.assigns.code, code_params) do
       {:ok, _code} ->
         socket
-        |> put_flash(:info, "Referral updated successfully!")
+        |> put_flash(:info, gettext("Referral updated successfully!"))
         |> push_navigate(to: Paths.index())
 
       {:error, changeset} ->
         socket
         |> assign(:changeset, changeset)
-        |> put_flash(:error, "Failed to update referral. Please check the errors below.")
+        |> put_flash(:error, gettext("Failed to update referral. Please check the errors below."))
     end
     |> then(&{:noreply, &1})
   end
 
-  defp page_title(:new), do: "New Referral"
-  defp page_title(:edit), do: "Edit Referral"
+  defp page_title(:new), do: gettext("New Referral")
+  defp page_title(:edit), do: gettext("Edit Referral")
 end
