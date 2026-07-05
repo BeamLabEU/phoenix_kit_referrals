@@ -37,7 +37,7 @@ defmodule PhoenixKitReferralsTest do
     test "matches the package version declared in mix.exs" do
       vsn = :phoenix_kit_referrals |> Application.spec(:vsn) |> to_string()
 
-      assert PhoenixKitReferrals.version() == "0.2.0"
+      assert PhoenixKitReferrals.version() == "0.3.0"
       assert PhoenixKitReferrals.version() == vsn
     end
   end

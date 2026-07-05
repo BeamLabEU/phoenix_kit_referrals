@@ -4,6 +4,21 @@ All notable changes to **PhoenixKitReferrals** are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-07-05
+
+### Added
+
+- Referral link capture via URL query param. Share `https://yourapp.com/?ref=CODE`
+  (`?referral=CODE` also accepted) — a client-side script (shipped via `js_sources/0`,
+  the same mechanism `phoenix_kit_crm` uses) stores the code in the visitor's
+  `localStorage` for 30 days (first-touch attribution, configurable via
+  `window.PhoenixKitReferralsConfig = {ttlDays: N}`) and strips the param from the
+  address bar. At registration, magic-link registration, or OAuth sign-in
+  (Google/Apple/GitHub/Facebook), the stored code auto-fills the existing
+  `referral_code` field or is appended to the OAuth link — using fields/links
+  PhoenixKit core already renders and reads server-side, so no core changes are
+  required.
+
 ## [0.2.0] - 2026-06-27
 
 ### Added
