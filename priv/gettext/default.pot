@@ -140,7 +140,7 @@ msgstr ""
 msgid "Disabled"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:316
+#: lib/phoenix_kit_referrals/web/form.ex:324
 #, elixir-autogen, elixir-format
 msgid "Edit Referral"
 msgstr ""
@@ -192,7 +192,7 @@ msgstr ""
 msgid "Expiration Date"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:296
+#: lib/phoenix_kit_referrals/web/form.ex:304
 #, elixir-autogen, elixir-format
 msgid "Failed to create referral. Please check the errors below."
 msgstr ""
@@ -217,7 +217,7 @@ msgstr ""
 msgid "Failed to update referral status"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:310
+#: lib/phoenix_kit_referrals/web/form.ex:318
 #, elixir-autogen, elixir-format
 msgid "Failed to update referral. Please check the errors below."
 msgstr ""
@@ -322,7 +322,7 @@ msgstr ""
 msgid "Never"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:315
+#: lib/phoenix_kit_referrals/web/form.ex:323
 #: lib/phoenix_kit_referrals/web/list.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "New Referral"
@@ -369,7 +369,7 @@ msgstr ""
 msgid "Referral activated"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:290
+#: lib/phoenix_kit_referrals/web/form.ex:298
 #, elixir-autogen, elixir-format
 msgid "Referral created successfully!"
 msgstr ""
@@ -384,12 +384,12 @@ msgstr ""
 msgid "Referral deleted successfully"
 msgstr ""
 
-#: lib/phoenix_kit_referrals/web/form.ex:304
+#: lib/phoenix_kit_referrals/web/form.ex:312
 #, elixir-autogen, elixir-format
 msgid "Referral updated successfully!"
 msgstr ""
 
-#: lib/phoenix_kit_referrals.ex:653
+#: lib/phoenix_kit_referrals.ex:725
 #: lib/phoenix_kit_referrals/web/list.ex:26
 #: lib/phoenix_kit_referrals/web/list.html.heex:93
 #: lib/phoenix_kit_referrals/web/settings.ex:23
@@ -529,7 +529,12 @@ msgstr ""
 msgid "uses"
 msgstr ""
 
-#: lib/phoenix_kit_referrals.ex:655
+#: lib/phoenix_kit_referrals.ex:727
 #, elixir-autogen, elixir-format
 msgid "Referrals, tracking, and reward programs"
+msgstr ""
+
+#: lib/phoenix_kit_referrals/web/form.ex:200
+#, elixir-autogen, elixir-format
+msgid "Could not generate an unused code. Please try again or enter one manually."
 msgstr ""

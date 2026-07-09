@@ -8,29 +8,32 @@ defmodule PhoenixKitReferrals do
 
   ## Schema Fields
 
-  - `code`: The referral code string (unique, required)
+  - `code`: The referral code string (unique, required, stored upcased)
   - `description`: Human-readable description of the code
   - `status`: Boolean indicating if the code is active
-  - `number_of_uses`: Current number of times the code has been used
+  - `number_of_uses`: Times the code has been used. Maintained by `use_code/2`;
+    not settable through `changeset/2`
   - `max_uses`: Maximum number of times the code can be used
-  - `created_by`: User ID of the admin who created the code
-  - `beneficiary`: User ID who benefits when this code is used (optional)
+  - `created_by_uuid`: UUID of the admin who created the code
+  - `beneficiary_uuid`: UUID of the user who benefits when this code is used (optional)
   - `date_created`: When the code was created
-  - `expiration_date`: When the code expires
+  - `expiration_date`: When the code expires (`nil` = never expires)
 
   ## Core Functions
 
   ### Code Management
   - `list_codes/0` - Get all referral codes
-  - `get_code!/1` - Get a referral code by ID (raises if not found)
-  - `get_code_by_string/1` - Get a referral code by its string value
+  - `get_code/1` - Get a referral code by UUID (`nil` if not found)
+  - `get_code!/1` - Get a referral code by UUID (raises if not found)
+  - `get_code_by_string/1` - Get a referral code by its string value (case-insensitive)
   - `create_code/1` - Create a new referral code
   - `update_code/2` - Update an existing referral code
   - `delete_code/1` - Delete a referral code
   - `generate_random_code/0` - Generate a random code string
+  - `generate_unique_code/1` - Generate a random code no existing code holds
 
   ### Usage Tracking
-  - `use_code/2` - Record usage of a referral code by a user
+  - `use_code/2` - Atomically claim one use of a code and record it
   - `get_usage_stats/1` - Get usage statistics for a code
   - `list_usage_for_code/1` - Get all usage records for a code
   - `user_used_code?/2` - Check if user has used a specific code
@@ -81,6 +84,16 @@ defmodule PhoenixKitReferrals do
   alias PhoenixKitReferrals.ReferralCodeUsage
   @primary_key {:uuid, UUIDv7, autogenerate: true}
 
+  # Alphabet for generated codes: uppercase letters + digits, minus the glyphs
+  # that read alike in most fonts (0/O, 1/I).
+  @code_alphabet ~c"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+  @code_length 5
+
+  # Named by core's V04 migration, which does NOT use Ecto's default index name.
+  # Passing it explicitly is what makes `unique_constraint/3` actually catch the
+  # violation instead of letting Postgrex raise.
+  @code_unique_index :phoenix_kit_referral_codes_code_uidx
+
   schema "phoenix_kit_referral_codes" do
     field(:code, :string)
     field(:description, :string)
@@ -112,10 +125,19 @@ defmodule PhoenixKitReferrals do
   ## --- Schema Functions ---
 
   @doc """
-  Creates a changeset for referral code creation and updates.
+  Creates a changeset for referral code creation and admin edits.
 
-  Validates that code is unique and all required fields are present.
-  Automatically sets date_created on new records.
+  The code string is trimmed and upcased before validation, so codes are stored
+  in one canonical case.
+
+  Validations that constrain a *value being set* — `expiration_date` in the
+  future, `max_uses` within the system limit — run only when that field is
+  actually changing. An already-expired code, or a code whose `max_uses` predates
+  a lowered system limit, therefore remains editable: an admin can still
+  deactivate it, rename it, or fix its description.
+
+  The usage counter is not castable here. It is owned by `use_code/2`, which
+  increments it atomically.
   """
   def changeset(referral_code, attrs) do
     referral_code
@@ -123,31 +145,33 @@ defmodule PhoenixKitReferrals do
       :code,
       :description,
       :status,
-      :number_of_uses,
       :max_uses,
       :created_by_uuid,
       :beneficiary_uuid,
       :date_created,
       :expiration_date
     ])
+    |> update_change(:code, &normalize_code/1)
     |> validate_required([:code, :description, :max_uses])
     |> validate_length(:code, min: 3, max: 50)
     |> validate_length(:description, min: 1, max: 255)
     |> validate_number(:max_uses, greater_than: 0)
     |> validate_max_uses_limit()
-    |> validate_number(:number_of_uses, greater_than_or_equal_to: 0)
-    |> validate_code_uniqueness()
-    |> unique_constraint(:code)
     |> validate_expiration_date()
+    |> validate_code_available()
+    |> unique_constraint(:code, name: @code_unique_index)
     |> maybe_set_date_created()
-    |> maybe_set_default_expiration()
   end
 
   @doc """
-  Generates a random 5-character alphanumeric referral code.
+  Generates a random #{@code_length}-character alphanumeric referral code.
 
-  Returns a string with uppercase letters and numbers, excluding
-  potentially confusing characters (0, O, I, 1).
+  Returns a string of uppercase letters and digits, excluding the characters
+  that read alike in most fonts (`0`, `O`, `I`, `1`). Characters are drawn with
+  replacement, so a code may repeat a character.
+
+  This does not check the code against existing codes — see
+  `generate_unique_code/1`.
 
   ## Examples
 
@@ -155,21 +179,38 @@ defmodule PhoenixKitReferrals do
       "A7B2K"
   """
   def generate_random_code do
-    # Exclude confusing characters: 0, O, I, 1
-    chars = ~w(A B C D E F G H J K L M N P Q R S T U V W X Y Z 2 3 4 5 6 7 8 9)
+    for _ <- 1..@code_length, into: "", do: <<Enum.random(@code_alphabet)>>
+  end
 
-    chars
-    |> Enum.take_random(5)
-    |> Enum.join()
+  @doc """
+  Generates a random code that no existing referral code already holds.
+
+  Retries up to `attempts` times before giving up, so a caller never has to
+  handle a unique-constraint violation from a generated code.
+
+  ## Examples
+
+      iex> PhoenixKitReferrals.generate_unique_code()
+      {:ok, "A7B2K"}
+  """
+  def generate_unique_code(attempts \\ 10) when is_integer(attempts) and attempts > 0 do
+    Enum.reduce_while(1..attempts, {:error, :no_unique_code}, fn _attempt, exhausted ->
+      code = generate_random_code()
+
+      case get_code_by_string(code) do
+        nil -> {:halt, {:ok, code}}
+        %__MODULE__{} -> {:cont, exhausted}
+      end
+    end)
   end
 
   @doc """
   Checks if a referral code is currently valid for use.
 
   A code is valid if:
-  - It exists and is active (status: true)
+  - It is active (status: true)
   - It has not exceeded its maximum uses
-  - It has not expired
+  - It has not expired (a code with no `expiration_date` never expires)
 
   ## Examples
 
@@ -177,23 +218,23 @@ defmodule PhoenixKitReferrals do
       true
   """
   def valid_for_use?(%__MODULE__{} = code) do
-    code.status &&
-      code.number_of_uses < code.max_uses &&
-      (is_nil(code.expiration_date) ||
-         DateTime.compare(UtilsDate.utc_now(), code.expiration_date) == :lt)
+    code.status and code.number_of_uses < code.max_uses and not expired?(code)
   end
 
   @doc """
   Checks if a referral code has expired.
+
+  A code with no `expiration_date` never expires.
 
   ## Examples
 
       iex> PhoenixKitReferrals.expired?(code)
       false
   """
-  def expired?(%__MODULE__{} = code) do
-    !is_nil(code.expiration_date) &&
-      DateTime.compare(UtilsDate.utc_now(), code.expiration_date) != :lt
+  def expired?(%__MODULE__{expiration_date: nil}), do: false
+
+  def expired?(%__MODULE__{expiration_date: expiration_date}) do
+    not DateTime.after?(expiration_date, UtilsDate.utc_now())
   end
 
   @doc """
@@ -226,31 +267,20 @@ defmodule PhoenixKitReferrals do
   end
 
   @doc """
-  Gets a single referral code by integer ID or UUID.
+  Gets a single referral code by UUID.
 
-  Accepts:
-  - Integer ID (e.g., `123`)
-  - UUID string (e.g., `"550e8400-e29b-41d4-a716-446655440000"`)
-  - Integer string (e.g., `"123"`)
-  - Any other input returns `nil`
-
-  Returns the referral code if found, `nil` otherwise.
+  Returns the referral code if found. Any input that is not a well-formed UUID
+  string — including an integer id — returns `nil`.
 
   ## Examples
-
-      iex> PhoenixKitReferrals.get_code(123)
-      %PhoenixKitReferrals{}
 
       iex> PhoenixKitReferrals.get_code("550e8400-e29b-41d4-a716-446655440000")
       %PhoenixKitReferrals{}
 
-      iex> PhoenixKitReferrals.get_code("123")
-      %PhoenixKitReferrals{}
-
-      iex> PhoenixKitReferrals.get_code(456)
+      iex> PhoenixKitReferrals.get_code("00000000-0000-0000-0000-000000000000")
       nil
 
-      iex> PhoenixKitReferrals.get_code(:invalid)
+      iex> PhoenixKitReferrals.get_code(123)
       nil
   """
   def get_code(id) when is_binary(id) do
@@ -284,18 +314,31 @@ defmodule PhoenixKitReferrals do
   @doc """
   Gets a single referral code by its string value.
 
-  Returns the referral code if found, nil otherwise.
+  The lookup trims and ignores case, so a user who types their code in lowercase
+  still matches. Returns the referral code if found, `nil` otherwise.
 
   ## Examples
 
       iex> PhoenixKitReferrals.get_code_by_string("WELCOME2024")
       %PhoenixKitReferrals{}
 
+      iex> PhoenixKitReferrals.get_code_by_string(" welcome2024 ")
+      %PhoenixKitReferrals{}
+
       iex> PhoenixKitReferrals.get_code_by_string("INVALID")
       nil
   """
   def get_code_by_string(code_string) when is_binary(code_string) do
-    repo().get_by(__MODULE__, code: code_string)
+    normalized = normalize_code(code_string)
+
+    # `limit: 1` keeps `one/1` total: rows predating case normalization could
+    # differ only by case, and the unique index is on the raw `code` column.
+    from(r in __MODULE__,
+      where: fragment("upper(?)", r.code) == ^normalized,
+      order_by: [asc: r.date_created],
+      limit: 1
+    )
+    |> repo().one()
   end
 
   @doc """
@@ -362,67 +405,96 @@ defmodule PhoenixKitReferrals do
   @doc """
   Records usage of a referral code by a user.
 
-  Validates that the code is valid for use before recording the usage.
-  Updates the code's number_of_uses counter.
+  Claims one use of the code and writes the matching usage record in a single
+  transaction. The claim is a conditional `UPDATE` that re-checks status,
+  expiration, and the usage limit in the database, so two concurrent callers can
+  never push a code past its `max_uses`.
+
+  A user may use a given code only once; a repeat attempt returns
+  `{:error, :already_used}` and leaves the counter untouched.
 
   ## Examples
 
       iex> PhoenixKitReferrals.use_code("WELCOME2024", user_uuid)
       {:ok, %PhoenixKitReferrals.ReferralCodeUsage{}}
 
-      iex> PhoenixKitReferrals.use_code("EXPIRED", user_uuid)
+      iex> PhoenixKitReferrals.use_code("NOSUCHCODE", user_uuid)
       {:error, :code_not_found}
+
+      iex> PhoenixKitReferrals.use_code("EXPIRED", user_uuid)
+      {:error, :code_expired}
   """
   def use_code(code_string, user_uuid) when is_binary(code_string) and is_binary(user_uuid) do
     if UUIDUtils.valid?(user_uuid) do
       case get_code_by_string(code_string) do
         nil -> {:error, :code_not_found}
-        code -> process_code_usage(code, user_uuid)
+        code -> record_code_usage(code, user_uuid)
       end
     else
       {:error, :invalid_user_uuid}
     end
   end
 
-  defp process_code_usage(code, user_uuid) do
-    case valid_for_use?(code) do
-      true -> record_code_usage(code, user_uuid)
-      false -> get_code_error(code)
-    end
-  end
-
   defp record_code_usage(code, user_uuid) do
-    repo().transaction(fn -> do_record_usage(code, user_uuid) end)
-  end
-
-  defp do_record_usage(code, user_uuid) do
-    user_uuid = resolve_user_uuid(user_uuid)
-
-    usage_result =
-      %ReferralCodeUsage{}
-      |> ReferralCodeUsage.changeset(%{
-        code_uuid: code.uuid,
-        used_by_uuid: user_uuid
-      })
-      |> repo().insert()
-
-    case usage_result do
-      {:ok, usage} ->
-        {:ok, _updated_code} = update_code(code, %{number_of_uses: code.number_of_uses + 1})
+    repo().transaction(fn ->
+      with :ok <- claim_use(code.uuid),
+           :ok <- ensure_unused_by(code.uuid, user_uuid),
+           {:ok, usage} <- insert_usage(code.uuid, user_uuid) do
         usage
+      else
+        {:error, reason} -> repo().rollback(reason)
+      end
+    end)
+  end
 
-      {:error, changeset} ->
-        repo().rollback(changeset)
+  # Increments the counter only if the code is still claimable, atomically.
+  # The row lock this takes also serializes concurrent `use_code/2` calls on the
+  # same code, which is what makes the duplicate check below sound without a
+  # unique index on (code_uuid, used_by_uuid) — core owns that table's DDL.
+  defp claim_use(code_uuid) do
+    now = UtilsDate.utc_now()
+
+    query =
+      from(r in __MODULE__,
+        where: r.uuid == ^code_uuid,
+        where: r.status == true,
+        where: r.number_of_uses < r.max_uses,
+        where: is_nil(r.expiration_date) or r.expiration_date > ^now,
+        update: [inc: [number_of_uses: 1]]
+      )
+
+    case repo().update_all(query, []) do
+      {1, _} -> :ok
+      {0, _} -> {:error, rejection_reason(code_uuid)}
     end
   end
 
-  defp get_code_error(code) do
-    cond do
-      expired?(code) -> {:error, :code_expired}
-      usage_limit_reached?(code) -> {:error, :usage_limit_reached}
-      !code.status -> {:error, :code_inactive}
-      true -> {:error, :code_invalid}
+  # The claim failed. Re-read the row (now that we've observed the committed
+  # state) to say *why*.
+  defp rejection_reason(code_uuid) do
+    case repo().get(__MODULE__, code_uuid) do
+      nil -> :code_not_found
+      code -> code_error(code)
     end
+  end
+
+  defp code_error(code) do
+    cond do
+      not code.status -> :code_inactive
+      expired?(code) -> :code_expired
+      usage_limit_reached?(code) -> :usage_limit_reached
+      true -> :code_invalid
+    end
+  end
+
+  defp ensure_unused_by(code_uuid, user_uuid) do
+    if user_used_code?(user_uuid, code_uuid), do: {:error, :already_used}, else: :ok
+  end
+
+  defp insert_usage(code_uuid, user_uuid) do
+    %ReferralCodeUsage{}
+    |> ReferralCodeUsage.changeset(%{code_uuid: code_uuid, used_by_uuid: user_uuid})
+    |> repo().insert()
   end
 
   @doc """
@@ -720,6 +792,8 @@ defmodule PhoenixKitReferrals do
   Gets codes that are currently valid for use.
 
   Returns codes that are active, not expired, and haven't reached usage limits.
+  Mirrors `valid_for_use?/1`, including codes with no `expiration_date` — those
+  never expire.
 
   ## Examples
 
@@ -731,7 +805,7 @@ defmodule PhoenixKitReferrals do
 
     from(r in __MODULE__,
       where: r.status == true,
-      where: r.expiration_date > ^now,
+      where: is_nil(r.expiration_date) or r.expiration_date > ^now,
       where: r.number_of_uses < r.max_uses,
       order_by: [desc: r.date_created]
     )
@@ -769,43 +843,44 @@ defmodule PhoenixKitReferrals do
 
   ## --- Private Helpers ---
 
-  defp validate_code_uniqueness(changeset) do
-    case get_field(changeset, :code) do
+  defp normalize_code(code) when is_binary(code), do: code |> String.trim() |> String.upcase()
+
+  # A friendlier duplicate message than the constraint error, checked only when
+  # the code is actually changing. `unique_constraint/3` remains the enforcer:
+  # this read is advisory and can lose a race.
+  defp validate_code_available(%Ecto.Changeset{valid?: false} = changeset), do: changeset
+
+  defp validate_code_available(changeset) do
+    case get_change(changeset, :code) do
+      nil -> changeset
+      code -> reject_if_taken(changeset, code)
+    end
+  end
+
+  defp reject_if_taken(changeset, code) do
+    case get_code_by_string(code) do
       nil ->
         changeset
 
-      # Let validate_required handle empty strings
-      "" ->
-        changeset
-
-      code_string ->
-        case get_code_by_string(code_string) do
-          # No duplicate found, validation passes
-          nil ->
-            changeset
-
-          existing_code ->
-            # Check if this is the same record we're editing
-            current_uuid = get_field(changeset, :uuid)
-
-            if current_uuid && existing_code.uuid == current_uuid do
-              # This is the same record, validation passes
-              changeset
-            else
-              # Different record with same code, validation fails
-              add_error(changeset, :code, "has already been taken")
-            end
+      # Editing the code that already holds this string is not a conflict.
+      %__MODULE__{uuid: uuid} ->
+        if uuid == changeset.data.uuid do
+          changeset
+        else
+          add_error(changeset, :code, "has already been taken")
         end
     end
   end
 
+  # Only guards an expiration being *set*. A code that has already expired stays
+  # editable, so an admin can still deactivate or amend it.
   defp validate_expiration_date(changeset) do
-    case get_field(changeset, :expiration_date) do
+    case get_change(changeset, :expiration_date) do
       nil ->
         changeset
 
       expiration_date ->
-        if DateTime.compare(expiration_date, UtilsDate.utc_now()) == :gt do
+        if DateTime.after?(expiration_date, UtilsDate.utc_now()) do
           changeset
         else
           add_error(changeset, :expiration_date, "must be in the future")
@@ -821,8 +896,11 @@ defmodule PhoenixKitReferrals do
     end
   end
 
+  # Only guards a max_uses being *set*. Lowering the system limit must not strand
+  # existing codes that were created under a higher one — they stay editable and
+  # usable, they just can't be raised further.
   defp validate_max_uses_limit(changeset) do
-    case get_field(changeset, :max_uses) do
+    case get_change(changeset, :max_uses) do
       nil ->
         changeset
 
@@ -878,15 +956,6 @@ defmodule PhoenixKitReferrals do
       0
     end
   end
-
-  defp maybe_set_default_expiration(changeset) do
-    # Respect user's intent to leave expiration empty (nil = no expiration)
-    # Only set default expiration for programmatic creation without explicit intent
-    changeset
-  end
-
-  # Resolves user UUID from any user identifier
-  defp resolve_user_uuid(user_uuid) when is_binary(user_uuid), do: user_uuid
 
   # Gets the configured repository for database operations
   defp repo do

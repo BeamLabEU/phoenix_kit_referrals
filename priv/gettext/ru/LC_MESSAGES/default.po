@@ -140,7 +140,7 @@ msgstr "Описание *"
 msgid "Disabled"
 msgstr "Отключено"
 
-#: lib/phoenix_kit_referrals/web/form.ex:316
+#: lib/phoenix_kit_referrals/web/form.ex:324
 #, elixir-autogen, elixir-format
 msgid "Edit Referral"
 msgstr "Редактировать реферал"
@@ -192,7 +192,7 @@ msgstr "Окончание"
 msgid "Expiration Date"
 msgstr "Дата окончания"
 
-#: lib/phoenix_kit_referrals/web/form.ex:296
+#: lib/phoenix_kit_referrals/web/form.ex:304
 #, elixir-autogen, elixir-format
 msgid "Failed to create referral. Please check the errors below."
 msgstr "Не удалось создать реферал. Проверьте ошибки ниже."
@@ -217,7 +217,7 @@ msgstr "Не удалось обновить максимум использов
 msgid "Failed to update referral status"
 msgstr "Не удалось обновить статус реферала"
 
-#: lib/phoenix_kit_referrals/web/form.ex:310
+#: lib/phoenix_kit_referrals/web/form.ex:318
 #, elixir-autogen, elixir-format
 msgid "Failed to update referral. Please check the errors below."
 msgstr "Не удалось обновить реферал. Проверьте ошибки ниже."
@@ -322,7 +322,7 @@ msgstr "Максимум использований на реферал обно
 msgid "Never"
 msgstr "Никогда"
 
-#: lib/phoenix_kit_referrals/web/form.ex:315
+#: lib/phoenix_kit_referrals/web/form.ex:323
 #: lib/phoenix_kit_referrals/web/list.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "New Referral"
@@ -369,7 +369,7 @@ msgstr "Введите корректное число от 1 до 10 000"
 msgid "Referral activated"
 msgstr "Реферал активирован"
 
-#: lib/phoenix_kit_referrals/web/form.ex:290
+#: lib/phoenix_kit_referrals/web/form.ex:298
 #, elixir-autogen, elixir-format
 msgid "Referral created successfully!"
 msgstr "Реферал успешно создан!"
@@ -384,12 +384,12 @@ msgstr "Реферал деактивирован"
 msgid "Referral deleted successfully"
 msgstr "Реферал успешно удалён"
 
-#: lib/phoenix_kit_referrals/web/form.ex:304
+#: lib/phoenix_kit_referrals/web/form.ex:312
 #, elixir-autogen, elixir-format
 msgid "Referral updated successfully!"
 msgstr "Реферал успешно обновлён!"
 
-#: lib/phoenix_kit_referrals.ex:653
+#: lib/phoenix_kit_referrals.ex:725
 #: lib/phoenix_kit_referrals/web/list.ex:26
 #: lib/phoenix_kit_referrals/web/list.html.heex:93
 #: lib/phoenix_kit_referrals/web/settings.ex:23
@@ -529,7 +529,12 @@ msgstr "рефералов"
 msgid "uses"
 msgstr "использований"
 
-#: lib/phoenix_kit_referrals.ex:655
+#: lib/phoenix_kit_referrals.ex:727
 #, elixir-autogen, elixir-format
 msgid "Referrals, tracking, and reward programs"
 msgstr "Рефералы, отслеживание и программы вознаграждений"
+
+#: lib/phoenix_kit_referrals/web/form.ex:200
+#, elixir-autogen, elixir-format
+msgid "Could not generate an unused code. Please try again or enter one manually."
+msgstr "Не удалось сгенерировать свободный код. Попробуйте ещё раз или введите код вручную."

@@ -140,7 +140,7 @@ msgstr "Kirjeldus *"
 msgid "Disabled"
 msgstr "Keelatud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:316
+#: lib/phoenix_kit_referrals/web/form.ex:324
 #, elixir-autogen, elixir-format
 msgid "Edit Referral"
 msgstr "Muuda soovitust"
@@ -192,7 +192,7 @@ msgstr "Aegumine"
 msgid "Expiration Date"
 msgstr "Aegumiskuupäev"
 
-#: lib/phoenix_kit_referrals/web/form.ex:296
+#: lib/phoenix_kit_referrals/web/form.ex:304
 #, elixir-autogen, elixir-format
 msgid "Failed to create referral. Please check the errors below."
 msgstr "Soovituse loomine ebaõnnestus. Kontrolli allolevaid vigu."
@@ -217,7 +217,7 @@ msgstr "Maksimaalsete kasutuste arvu soovituse kohta uuendamine ebaõnnestus"
 msgid "Failed to update referral status"
 msgstr "Soovituse oleku uuendamine ebaõnnestus"
 
-#: lib/phoenix_kit_referrals/web/form.ex:310
+#: lib/phoenix_kit_referrals/web/form.ex:318
 #, elixir-autogen, elixir-format
 msgid "Failed to update referral. Please check the errors below."
 msgstr "Soovituse uuendamine ebaõnnestus. Kontrolli allolevaid vigu."
@@ -322,7 +322,7 @@ msgstr "Maksimaalne kasutuste arv soovituse kohta uuendatud väärtusele %{count
 msgid "Never"
 msgstr "Mitte kunagi"
 
-#: lib/phoenix_kit_referrals/web/form.ex:315
+#: lib/phoenix_kit_referrals/web/form.ex:323
 #: lib/phoenix_kit_referrals/web/list.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "New Referral"
@@ -369,7 +369,7 @@ msgstr "Sisesta kehtiv arv vahemikus 1 kuni 10 000"
 msgid "Referral activated"
 msgstr "Soovitus aktiveeritud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:290
+#: lib/phoenix_kit_referrals/web/form.ex:298
 #, elixir-autogen, elixir-format
 msgid "Referral created successfully!"
 msgstr "Soovitus edukalt loodud!"
@@ -384,12 +384,12 @@ msgstr "Soovitus deaktiveeritud"
 msgid "Referral deleted successfully"
 msgstr "Soovitus edukalt kustutatud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:304
+#: lib/phoenix_kit_referrals/web/form.ex:312
 #, elixir-autogen, elixir-format
 msgid "Referral updated successfully!"
 msgstr "Soovitus edukalt uuendatud!"
 
-#: lib/phoenix_kit_referrals.ex:653
+#: lib/phoenix_kit_referrals.ex:725
 #: lib/phoenix_kit_referrals/web/list.ex:26
 #: lib/phoenix_kit_referrals/web/list.html.heex:93
 #: lib/phoenix_kit_referrals/web/settings.ex:23
@@ -529,7 +529,12 @@ msgstr "soovitust"
 msgid "uses"
 msgstr "kasutust"
 
-#: lib/phoenix_kit_referrals.ex:655
+#: lib/phoenix_kit_referrals.ex:727
 #, elixir-autogen, elixir-format
 msgid "Referrals, tracking, and reward programs"
 msgstr "Soovitused, jälgimine ja preemiaprogrammid"
+
+#: lib/phoenix_kit_referrals/web/form.ex:200
+#, elixir-autogen, elixir-format
+msgid "Could not generate an unused code. Please try again or enter one manually."
+msgstr "Vaba koodi genereerimine ebaõnnestus. Proovige uuesti või sisestage kood käsitsi."

@@ -112,6 +112,16 @@ defmodule PhoenixKitReferralsTest do
       refute String.contains?(code, ["0", "O", "I", "1"])
     end
 
+    test "generate_random_code/0 draws with replacement, so a char can repeat" do
+      # Sampling without replacement (the old Enum.take_random/2) made a repeated
+      # character unreachable. ~28% of codes repeat one, so over 200 draws seeing
+      # none would mean we regressed, not that we got unlucky.
+      assert Enum.any?(1..200, fn _ ->
+               code = PhoenixKitReferrals.generate_random_code()
+               String.length(code) != code |> String.graphemes() |> Enum.uniq() |> length()
+             end)
+    end
+
     test "usage_limit_reached?/1 compares uses against max" do
       refute PhoenixKitReferrals.usage_limit_reached?(%PhoenixKitReferrals{
                number_of_uses: 0,
@@ -129,8 +139,87 @@ defmodule PhoenixKitReferralsTest do
     end
 
     test "expired?/1 is true for a code whose expiration is in the past" do
-      past = DateTime.add(DateTime.utc_now(), -3600, :second)
-      assert PhoenixKitReferrals.expired?(%PhoenixKitReferrals{expiration_date: past})
+      assert PhoenixKitReferrals.expired?(%PhoenixKitReferrals{expiration_date: past()})
     end
+
+    test "valid_for_use?/1 accepts a never-expiring code, matching list_valid_codes/0" do
+      assert PhoenixKitReferrals.valid_for_use?(%PhoenixKitReferrals{
+               status: true,
+               number_of_uses: 0,
+               max_uses: 10,
+               expiration_date: nil
+             })
+    end
+
+    test "valid_for_use?/1 rejects an inactive, exhausted, or expired code" do
+      base = %PhoenixKitReferrals{status: true, number_of_uses: 0, max_uses: 10}
+
+      refute PhoenixKitReferrals.valid_for_use?(%{base | status: false})
+      refute PhoenixKitReferrals.valid_for_use?(%{base | number_of_uses: 10})
+      refute PhoenixKitReferrals.valid_for_use?(%{base | expiration_date: past()})
+    end
+  end
+
+  # These exercise changeset/2 on paths that never reach the database: the
+  # uniqueness pre-check is skipped once the changeset is already invalid, and
+  # the max_uses / expiration guards only fire when their field is changing.
+  describe "changeset/2 (no DB)" do
+    test "trims and upcases the code so lookups are case-insensitive" do
+      changeset = PhoenixKitReferrals.changeset(%PhoenixKitReferrals{}, %{code: "  welcome  "})
+
+      assert changeset.changes.code == "WELCOME"
+    end
+
+    test "does not cast number_of_uses — the counter is owned by use_code/2" do
+      changeset =
+        PhoenixKitReferrals.changeset(persisted_code(), %{number_of_uses: 999})
+
+      refute Map.has_key?(changeset.changes, :number_of_uses)
+    end
+
+    test "an expired code stays editable, so an admin can still deactivate it" do
+      changeset =
+        persisted_code(expiration_date: past())
+        |> PhoenixKitReferrals.changeset(%{status: false})
+
+      assert changeset.valid?
+      assert changeset.changes == %{status: false}
+    end
+
+    test "but setting an expiration in the past is still rejected" do
+      changeset =
+        persisted_code()
+        |> PhoenixKitReferrals.changeset(%{expiration_date: past()})
+
+      refute changeset.valid?
+      assert %{expiration_date: ["must be in the future"]} = errors_on(changeset)
+    end
+  end
+
+  defp past, do: DateTime.add(DateTime.utc_now(), -3600, :second)
+
+  # A code as it comes back from the DB. The :loaded meta state matters —
+  # changeset/2 only stamps date_created on :built structs.
+  defp persisted_code(attrs \\ []) do
+    defaults = [
+      uuid: "018f0000-0000-7000-8000-000000000000",
+      code: "WELCO",
+      description: "Welcome promotion",
+      status: true,
+      number_of_uses: 0,
+      max_uses: 10
+    ]
+
+    PhoenixKitReferrals
+    |> struct(Keyword.merge(defaults, attrs))
+    |> Ecto.put_meta(state: :loaded)
+  end
+
+  defp errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), "") |> to_string()
+      end)
+    end)
   end
 end

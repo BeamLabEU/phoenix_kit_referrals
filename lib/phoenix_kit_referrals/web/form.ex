@@ -92,34 +92,13 @@ defmodule PhoenixKitReferrals.Web.Form do
   end
 
   def handle_event("generate_code", _params, socket) do
-    random_code = Referrals.generate_random_code()
+    case Referrals.generate_unique_code() do
+      {:ok, random_code} ->
+        {:noreply, put_generated_code(socket, random_code)}
 
-    # Get current changeset changes and add the generated code
-    current_changes = socket.assigns.changeset.changes
-    updated_changes = Map.put(current_changes, :code, random_code)
-
-    # Add beneficiary if selected
-    final_changes =
-      case socket.assigns.selected_beneficiary do
-        nil ->
-          updated_changes
-
-        beneficiary ->
-          updated_changes
-          |> Map.put(:beneficiary_uuid, beneficiary.uuid)
-      end
-
-    changeset =
-      case socket.assigns.mode do
-        :new -> Referrals.changeset(%Referrals{}, final_changes)
-        :edit -> Referrals.changeset(socket.assigns.code, final_changes)
-      end
-
-    socket =
-      socket
-      |> assign(:changeset, changeset)
-
-    {:noreply, socket}
+      {:error, :no_unique_code} ->
+        {:noreply, put_flash(socket, :error, generate_failed_message())}
+    end
   end
 
   def handle_event("search_beneficiary", %{"search" => search_term}, socket) do
@@ -191,6 +170,35 @@ defmodule PhoenixKitReferrals.Web.Form do
   end
 
   # Private functions
+
+  defp put_generated_code(socket, random_code) do
+    # Get current changeset changes and add the generated code
+    current_changes = socket.assigns.changeset.changes
+    updated_changes = Map.put(current_changes, :code, random_code)
+
+    # Add beneficiary if selected
+    final_changes =
+      case socket.assigns.selected_beneficiary do
+        nil ->
+          updated_changes
+
+        beneficiary ->
+          updated_changes
+          |> Map.put(:beneficiary_uuid, beneficiary.uuid)
+      end
+
+    changeset =
+      case socket.assigns.mode do
+        :new -> Referrals.changeset(%Referrals{}, final_changes)
+        :edit -> Referrals.changeset(socket.assigns.code, final_changes)
+      end
+
+    assign(socket, :changeset, changeset)
+  end
+
+  defp generate_failed_message do
+    gettext("Could not generate an unused code. Please try again or enter one manually.")
+  end
 
   defp load_code_data(socket, :new, _code_uuid) do
     assign(socket, :code, nil)

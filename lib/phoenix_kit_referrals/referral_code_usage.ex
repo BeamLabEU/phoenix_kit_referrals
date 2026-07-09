@@ -38,6 +38,11 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
   alias PhoenixKitReferrals, as: Referrals
   @primary_key {:uuid, UUIDv7, autogenerate: true}
 
+  # Core's uuid_fk_columns migration names this constraint `fk_<table>_<column>`,
+  # not Ecto's default `<table>_<column>_fkey`. Without the explicit name a
+  # violation escapes as a Postgrex.Error instead of a changeset error.
+  @code_fk_constraint :fk_referral_code_usage_code_uuid
+
   schema "phoenix_kit_referral_code_usage" do
     field(:used_by_uuid, UUIDv7)
     field(:date_used, :utc_datetime)
@@ -59,7 +64,7 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
     usage_record
     |> cast(attrs, [:code_uuid, :used_by_uuid, :date_used])
     |> validate_required([:code_uuid, :used_by_uuid])
-    |> foreign_key_constraint(:code_uuid)
+    |> foreign_key_constraint(:code_uuid, name: @code_fk_constraint)
     |> maybe_set_date_used()
   end
 
