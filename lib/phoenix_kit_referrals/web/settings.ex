@@ -126,4 +126,26 @@ defmodule PhoenixKitReferrals.Web.Settings do
         {:noreply, socket}
     end
   end
+
+  @doc """
+  Lightweight in-card section heading (icon + title + rule). Local copy of
+  core's `Core.FormSection.section_header/1` under a distinct name, so this
+  package renders identically without requiring a core release that exports
+  it (and won't conflict with the core import once it does).
+  """
+  attr(:icon, :string, required: true)
+  attr(:title, :string, required: true)
+  attr(:class, :string, default: nil)
+
+  def settings_section_header(assigns) do
+    ~H"""
+    <div class={["flex items-center gap-2 pt-4 first:pt-0", @class]}>
+      <.icon name={@icon} class="w-4 h-4 text-primary/70" />
+      <h3 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">
+        {@title}
+      </h3>
+      <div class="flex-1 border-t border-base-300 ml-2"></div>
+    </div>
+    """
+  end
 end

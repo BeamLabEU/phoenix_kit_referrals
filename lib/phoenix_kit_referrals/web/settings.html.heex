@@ -8,7 +8,7 @@
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
       <%= if @referral_codes_enabled do %>
-        <.section_header icon="hero-gift" title={gettext("Registration")} class="pt-0" />
+        <.settings_section_header icon="hero-gift" title={gettext("Registration")} class="pt-0" />
 
         <%!-- Require Referrals (saves immediately) --%>
         <div class="form-control w-full">
@@ -30,7 +30,7 @@
           </div>
         </div>
 
-        <.section_header icon="hero-scale" title={gettext("Usage Limits")} />
+        <.settings_section_header icon="hero-scale" title={gettext("Usage Limits")} />
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <%!-- Max Uses Per Referral --%>
