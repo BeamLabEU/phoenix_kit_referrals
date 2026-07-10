@@ -108,11 +108,6 @@ msgstr "Loo esimene soovitus, et alustada registreerimiste jälgimist."
 msgid "Created By"
 msgstr "Loonud"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:104
-#, elixir-autogen, elixir-format
-msgid "Current Configuration"
-msgstr "Praegune seadistus"
-
 #: lib/phoenix_kit_referrals/web/list.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "Currently available"
@@ -135,12 +130,11 @@ msgid "Description *"
 msgstr "Kirjeldus *"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:62
-#: lib/phoenix_kit_referrals/web/settings.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "Disabled"
 msgstr "Keelatud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:324
+#: lib/phoenix_kit_referrals/web/form.ex:316
 #, elixir-autogen, elixir-format
 msgid "Edit Referral"
 msgstr "Muuda soovitust"
@@ -150,18 +144,12 @@ msgstr "Muuda soovitust"
 msgid "Edit referral details"
 msgstr "Muuda soovituse andmeid"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:138
-#, elixir-autogen, elixir-format
-msgid "Enable referrals above to access configuration options and allow users to create referrals."
-msgstr "Luba soovitused ülal, et avada seadistusvalikud ja lubada kasutajatel soovitusi luua."
-
 #: lib/phoenix_kit_referrals/web/list.html.heex:82
 #, elixir-autogen, elixir-format
 msgid "Enable referrals in Modules to get started"
 msgstr "Alustamiseks luba soovitused Moodulites"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:62
-#: lib/phoenix_kit_referrals/web/settings.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "Enabled"
 msgstr "Lubatud"
@@ -171,12 +159,12 @@ msgstr "Lubatud"
 msgid "Enter code or generate random"
 msgstr "Sisesta kood või genereeri juhuslik"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:81
+#: lib/phoenix_kit_referrals/web/settings.html.heex:68
 #, elixir-autogen, elixir-format
 msgid "Enter max referrals"
 msgstr "Sisesta max soovitusi"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:56
+#: lib/phoenix_kit_referrals/web/settings.html.heex:45
 #, elixir-autogen, elixir-format
 msgid "Enter max uses"
 msgstr "Sisesta max kasutusi"
@@ -192,7 +180,7 @@ msgstr "Aegumine"
 msgid "Expiration Date"
 msgstr "Aegumiskuupäev"
 
-#: lib/phoenix_kit_referrals/web/form.ex:304
+#: lib/phoenix_kit_referrals/web/form.ex:296
 #, elixir-autogen, elixir-format
 msgid "Failed to create referral. Please check the errors below."
 msgstr "Soovituse loomine ebaõnnestus. Kontrolli allolevaid vigu."
@@ -202,12 +190,12 @@ msgstr "Soovituse loomine ebaõnnestus. Kontrolli allolevaid vigu."
 msgid "Failed to delete referral"
 msgstr "Soovituse kustutamine ebaõnnestus"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:113
+#: lib/phoenix_kit_referrals/web/settings.ex:117
 #, elixir-autogen, elixir-format
 msgid "Failed to update maximum referrals per user"
 msgstr "Maksimaalsete soovituste arvu kasutaja kohta uuendamine ebaõnnestus"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:83
+#: lib/phoenix_kit_referrals/web/settings.ex:87
 #, elixir-autogen, elixir-format
 msgid "Failed to update maximum uses per referral"
 msgstr "Maksimaalsete kasutuste arvu soovituse kohta uuendamine ebaõnnestus"
@@ -217,7 +205,7 @@ msgstr "Maksimaalsete kasutuste arvu soovituse kohta uuendamine ebaõnnestus"
 msgid "Failed to update referral status"
 msgstr "Soovituse oleku uuendamine ebaõnnestus"
 
-#: lib/phoenix_kit_referrals/web/form.ex:318
+#: lib/phoenix_kit_referrals/web/form.ex:310
 #, elixir-autogen, elixir-format
 msgid "Failed to update referral. Please check the errors below."
 msgstr "Soovituse uuendamine ebaõnnestus. Kontrolli allolevaid vigu."
@@ -233,11 +221,12 @@ msgid "Generate"
 msgstr "Genereeri"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:207
+#: lib/phoenix_kit_referrals/web/settings.html.heex:99
 #, elixir-autogen, elixir-format
 msgid "Go to Modules"
 msgstr "Mine moodulite juurde"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:93
+#: lib/phoenix_kit_referrals/web/settings.html.heex:77
 #, elixir-autogen, elixir-format
 msgid "How many referrals each user can create (1-1,000)"
 msgstr "Mitu soovitust saab iga kasutaja luua (1–1000)"
@@ -247,7 +236,7 @@ msgstr "Mitu soovitust saab iga kasutaja luua (1–1000)"
 msgid "How many times can this referral be used?"
 msgstr "Mitu korda saab seda soovitust kasutada?"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:68
+#: lib/phoenix_kit_referrals/web/settings.html.heex:54
 #, elixir-autogen, elixir-format
 msgid "How many times each referral can be used (1-10,000)"
 msgstr "Mitu korda saab iga soovitust kasutada (1–10 000)"
@@ -277,22 +266,12 @@ msgstr "Väljasta ja jälgi soovitusi kasutajate registreerimiseks"
 msgid "Leave empty for no expiration"
 msgstr "Jäta tühjaks, kui aegumist pole"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:25
+#: lib/phoenix_kit_referrals/web/settings.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Make referrals mandatory for user registration"
 msgstr "Muuda soovitused registreerimiseks kohustuslikuks"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:124
-#, elixir-autogen, elixir-format
-msgid "Max referrals per user:"
-msgstr "Max soovitusi kasutaja kohta:"
-
-#: lib/phoenix_kit_referrals/web/settings.html.heex:120
-#, elixir-autogen, elixir-format
-msgid "Max uses per referral:"
-msgstr "Max kasutusi soovituse kohta:"
-
-#: lib/phoenix_kit_referrals/web/settings.html.heex:76
+#: lib/phoenix_kit_referrals/web/settings.html.heex:63
 #, elixir-autogen, elixir-format
 msgid "Maximum Referrals Per User"
 msgstr "Maksimaalne soovituste arv kasutaja kohta"
@@ -302,17 +281,17 @@ msgstr "Maksimaalne soovituste arv kasutaja kohta"
 msgid "Maximum Uses *"
 msgstr "Maksimaalne kasutuste arv *"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:51
+#: lib/phoenix_kit_referrals/web/settings.html.heex:40
 #, elixir-autogen, elixir-format
 msgid "Maximum Uses Per Referral"
 msgstr "Maksimaalne kasutuste arv soovituse kohta"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:106
+#: lib/phoenix_kit_referrals/web/settings.ex:110
 #, elixir-autogen, elixir-format
 msgid "Maximum referrals per user updated to %{count}"
 msgstr "Maksimaalne soovituste arv kasutaja kohta uuendatud väärtusele %{count}"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:76
+#: lib/phoenix_kit_referrals/web/settings.ex:80
 #, elixir-autogen, elixir-format
 msgid "Maximum uses per referral updated to %{count}"
 msgstr "Maksimaalne kasutuste arv soovituse kohta uuendatud väärtusele %{count}"
@@ -322,16 +301,11 @@ msgstr "Maksimaalne kasutuste arv soovituse kohta uuendatud väärtusele %{count
 msgid "Never"
 msgstr "Mitte kunagi"
 
-#: lib/phoenix_kit_referrals/web/form.ex:323
+#: lib/phoenix_kit_referrals/web/form.ex:315
 #: lib/phoenix_kit_referrals/web/list.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "New Referral"
 msgstr "Uus soovitus"
-
-#: lib/phoenix_kit_referrals/web/settings.html.heex:116
-#, elixir-autogen, elixir-format
-msgid "No"
-msgstr "Ei"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:99
 #, elixir-autogen, elixir-format
@@ -354,12 +328,12 @@ msgstr "Valikuline"
 msgid "Optional: Search and select a user who will benefit from this referral"
 msgstr "Valikuline: otsi ja vali kasutaja, kes saab sellest soovitusest kasu"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:120
+#: lib/phoenix_kit_referrals/web/settings.ex:124
 #, elixir-autogen, elixir-format
 msgid "Please enter a valid number between 1 and 1,000"
 msgstr "Sisesta kehtiv arv vahemikus 1 kuni 1000"
 
-#: lib/phoenix_kit_referrals/web/settings.ex:90
+#: lib/phoenix_kit_referrals/web/settings.ex:94
 #, elixir-autogen, elixir-format
 msgid "Please enter a valid number between 1 and 10,000"
 msgstr "Sisesta kehtiv arv vahemikus 1 kuni 10 000"
@@ -369,7 +343,7 @@ msgstr "Sisesta kehtiv arv vahemikus 1 kuni 10 000"
 msgid "Referral activated"
 msgstr "Soovitus aktiveeritud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:298
+#: lib/phoenix_kit_referrals/web/form.ex:290
 #, elixir-autogen, elixir-format
 msgid "Referral created successfully!"
 msgstr "Soovitus edukalt loodud!"
@@ -384,12 +358,12 @@ msgstr "Soovitus deaktiveeritud"
 msgid "Referral deleted successfully"
 msgstr "Soovitus edukalt kustutatud"
 
-#: lib/phoenix_kit_referrals/web/form.ex:312
+#: lib/phoenix_kit_referrals/web/form.ex:304
 #, elixir-autogen, elixir-format
 msgid "Referral updated successfully!"
 msgstr "Soovitus edukalt uuendatud!"
 
-#: lib/phoenix_kit_referrals.ex:725
+#: lib/phoenix_kit_referrals.ex:653
 #: lib/phoenix_kit_referrals/web/list.ex:26
 #: lib/phoenix_kit_referrals/web/list.html.heex:93
 #: lib/phoenix_kit_referrals/web/settings.ex:23
@@ -398,7 +372,7 @@ msgid "Referrals"
 msgstr "Soovitused"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:196
-#: lib/phoenix_kit_referrals/web/settings.html.heex:136
+#: lib/phoenix_kit_referrals/web/settings.html.heex:92
 #, elixir-autogen, elixir-format
 msgid "Referrals Disabled"
 msgstr "Soovitused keelatud"
@@ -448,11 +422,6 @@ msgstr "Nõua soovitusi"
 msgid "Required"
 msgstr "Kohustuslik"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:114
-#, elixir-autogen, elixir-format
-msgid "Required:"
-msgstr "Kohustuslik:"
-
 #: lib/phoenix_kit_referrals/web/form.html.heex:103
 #, elixir-autogen, elixir-format
 msgid "Search users by email, username, or name..."
@@ -466,13 +435,11 @@ msgstr "Määra, mitu kasutajat saavad selle soovitusega registreeruda"
 #: lib/phoenix_kit_referrals/web/list.ex:91
 #: lib/phoenix_kit_referrals/web/list.html.heex:58
 #: lib/phoenix_kit_referrals/web/list.html.heex:127
-#: lib/phoenix_kit_referrals/web/settings.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Status"
 msgstr "Olek"
 
 #: lib/phoenix_kit_referrals/web/list.html.heex:60
-#: lib/phoenix_kit_referrals/web/settings.html.heex:107
 #, elixir-autogen, elixir-format
 msgid "Status:"
 msgstr "Olek:"
@@ -504,7 +471,7 @@ msgstr "Uuenda soovitust"
 msgid "Usage"
 msgstr "Kasutus"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:45
+#: lib/phoenix_kit_referrals/web/settings.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "Usage Limits"
 msgstr "Kasutuspiirangud"
@@ -514,27 +481,22 @@ msgstr "Kasutuspiirangud"
 msgid "Used Referrals"
 msgstr "Kasutatud soovitused"
 
-#: lib/phoenix_kit_referrals/web/settings.html.heex:116
-#, elixir-autogen, elixir-format
-msgid "Yes"
-msgstr "Jah"
-
-#: lib/phoenix_kit_referrals/web/settings.html.heex:89
-#, elixir-autogen, elixir-format
-msgid "referrals"
-msgstr "soovitust"
-
-#: lib/phoenix_kit_referrals/web/settings.html.heex:64
-#, elixir-autogen, elixir-format
-msgid "uses"
-msgstr "kasutust"
-
-#: lib/phoenix_kit_referrals.ex:727
+#: lib/phoenix_kit_referrals.ex:655
 #, elixir-autogen, elixir-format
 msgid "Referrals, tracking, and reward programs"
 msgstr "Soovitused, jälgimine ja preemiaprogrammid"
 
-#: lib/phoenix_kit_referrals/web/form.ex:200
+#: lib/phoenix_kit_referrals/web/settings.html.heex:86
 #, elixir-autogen, elixir-format
-msgid "Could not generate an unused code. Please try again or enter one manually."
-msgstr "Vaba koodi genereerimine ebaõnnestus. Proovige uuesti või sisestage kood käsitsi."
+msgid "Changes on this page are saved automatically."
+msgstr "Selle lehe muudatused salvestatakse automaatselt."
+
+#: lib/phoenix_kit_referrals/web/settings.html.heex:94
+#, elixir-autogen, elixir-format
+msgid "Enable the Referrals module to configure referral requirements and limits."
+msgstr "Luba soovituste moodul, et seadistada soovituste nõudeid ja piiranguid."
+
+#: lib/phoenix_kit_referrals/web/settings.html.heex:11
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Registration"
+msgstr "Registreerimine"

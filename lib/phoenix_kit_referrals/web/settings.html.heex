@@ -5,142 +5,101 @@
     subtitle={gettext("Configure referrals behavior and limits")}
   />
 
-  <%!-- Main Content --%>
-  <div class="space-y-8">
-    <%!-- Status Card --%>
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title text-2xl mb-4">
-          <.icon name="hero-cog-6-tooth" class="w-6 h-6" /> {gettext("Status")}
-        </h2>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <%= if @referral_codes_enabled do %>
+        <.section_header icon="hero-gift" title={gettext("Registration")} class="pt-0" />
 
-        <%= if @referral_codes_enabled do %>
-          <div class="divider"></div>
-
-          <div class="form-control">
-            <label class="label cursor-pointer">
-              <span class="label-text text-lg">
-                <span class="font-semibold">{gettext("Require Referrals")}</span>
-                <div class="text-sm text-base-content/70 mt-1">
-                  {gettext("Make referrals mandatory for user registration")}
-                </div>
-              </span>
-              <input
-                type="checkbox"
-                class="toggle toggle-secondary"
-                checked={@referral_codes_required}
-                phx-click="toggle_referral_codes_required"
-              />
-            </label>
+        <%!-- Require Referrals (saves immediately) --%>
+        <div class="form-control w-full">
+          <label class="label cursor-pointer justify-start gap-4">
+            <input
+              type="checkbox"
+              class="toggle toggle-primary"
+              checked={@referral_codes_required}
+              phx-click="toggle_referral_codes_required"
+            />
+            <span class="label-text">
+              <span class="font-medium">{gettext("Require Referrals")}</span>
+            </span>
+          </label>
+          <div class="label pt-0">
+            <span class="label-text-alt text-xs text-base-content/50">
+              {gettext("Make referrals mandatory for user registration")}
+            </span>
           </div>
-        <% end %>
-      </div>
-    </div>
+        </div>
 
-    <%= if @referral_codes_enabled do %>
-      <%!-- Usage Limits Card --%>
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-          <h2 class="card-title text-2xl mb-4">
-            <.icon name="hero-scale" class="w-6 h-6" /> {gettext("Usage Limits")}
-          </h2>
+        <.section_header icon="hero-scale" title={gettext("Usage Limits")} />
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <%!-- Max Uses Per Referral --%>
-          <div class="form-control mb-4">
+          <div class="form-control w-full">
             <label class="label">
-              <span class="label-text text-lg font-semibold">{gettext("Maximum Uses Per Referral")}</span>
+              <span class="label-text text-base font-medium">
+                {gettext("Maximum Uses Per Referral")}
+              </span>
             </label>
-            <div class="input-group">
-              <input
-                type="number"
-                placeholder={gettext("Enter max uses")}
-                class="input input-bordered w-full max-w-xs"
-                value={@max_uses_per_code}
-                min="1"
-                max="10000"
-                phx-blur="update_max_uses_per_code"
-                phx-value-max_uses_per_code={assigns[:max_uses_per_code]}
-              />
-              <span class="bg-base-200 px-4 py-3 text-sm">{gettext("uses")}</span>
-            </div>
-            <label class="label">
-              <span class="label-text-alt text-base-content/70">
+            <input
+              type="number"
+              placeholder={gettext("Enter max uses")}
+              class="input input-bordered w-full focus:input-primary"
+              value={@max_uses_per_code}
+              min="1"
+              max="10000"
+              phx-blur="update_max_uses_per_code"
+            />
+            <div class="label">
+              <span class="label-text-alt text-xs text-base-content/50">
                 {gettext("How many times each referral can be used (1-10,000)")}
               </span>
-            </label>
+            </div>
           </div>
 
           <%!-- Max Referrals Per User --%>
-          <div class="form-control">
+          <div class="form-control w-full">
             <label class="label">
-              <span class="label-text text-lg font-semibold">{gettext("Maximum Referrals Per User")}</span>
+              <span class="label-text text-base font-medium">
+                {gettext("Maximum Referrals Per User")}
+              </span>
             </label>
-            <div class="input-group">
-              <input
-                type="number"
-                placeholder={gettext("Enter max referrals")}
-                class="input input-bordered w-full max-w-xs"
-                value={@max_codes_per_user}
-                min="1"
-                max="1000"
-                phx-blur="update_max_codes_per_user"
-                phx-value-max_codes_per_user={assigns[:max_codes_per_user]}
-              />
-              <span class="bg-base-200 px-4 py-3 text-sm">{gettext("referrals")}</span>
-            </div>
-            <label class="label">
-              <span class="label-text-alt text-base-content/70">
+            <input
+              type="number"
+              placeholder={gettext("Enter max referrals")}
+              class="input input-bordered w-full focus:input-primary"
+              value={@max_codes_per_user}
+              min="1"
+              max="1000"
+              phx-blur="update_max_codes_per_user"
+            />
+            <div class="label">
+              <span class="label-text-alt text-xs text-base-content/50">
                 {gettext("How many referrals each user can create (1-1,000)")}
               </span>
-            </label>
+            </div>
           </div>
         </div>
-      </div>
 
-      <%!-- Current Configuration Summary --%>
-      <div class="alert alert-info">
-        <.icon name="hero-information-circle" class="w-5 h-5" />
-        <div>
-          <h3 class="font-bold">{gettext("Current Configuration")}</h3>
-          <div class="text-sm mt-1">
-            <p>
-              {gettext("Status:")}
-              <span class="font-semibold">
-                {if @referral_codes_enabled, do: gettext("Enabled"), else: gettext("Disabled")}
-              </span>
-            </p>
-            <%= if @referral_codes_enabled do %>
-              <p>
-                {gettext("Required:")}
-                <span class="font-semibold">
-                  {if @referral_codes_required, do: gettext("Yes"), else: gettext("No")}
-                </span>
-              </p>
-              <p>
-                {gettext("Max uses per referral:")}
-                <span class="font-semibold">{@max_uses_per_code}</span>
-              </p>
-              <p>
-                {gettext("Max referrals per user:")}
-                <span class="font-semibold">{@max_codes_per_user}</span>
-              </p>
-            <% end %>
-          </div>
+        <%!-- Footnote --%>
+        <div class="flex items-start gap-2 mt-4 text-xs text-base-content/50">
+          <.icon name="hero-information-circle" class="w-4 h-4 shrink-0 mt-0.5" />
+          <p>{gettext("Changes on this page are saved automatically.")}</p>
         </div>
-      </div>
-    <% else %>
-      <%!-- Disabled State Information --%>
-      <div class="alert alert-warning">
-        <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
-        <div>
-          <h3 class="font-bold">{gettext("Referrals Disabled")}</h3>
-          <p class="text-sm mt-1">
+      <% else %>
+        <%!-- Disabled: the module toggle lives on the Modules page --%>
+        <div class="text-center py-12">
+          <.icon name="hero-gift" class="w-12 h-12 mx-auto mb-4 text-base-content/30" />
+          <h3 class="font-semibold text-lg mb-1">{gettext("Referrals Disabled")}</h3>
+          <p class="text-sm text-base-content/60 mb-5 max-w-md mx-auto">
             {gettext(
-              "Enable referrals above to access configuration options and allow users to create referrals."
+              "Enable the Referrals module to configure referral requirements and limits."
             )}
           </p>
+          <.pk_link navigate="/admin/modules" class="btn btn-primary btn-sm">
+            {gettext("Go to Modules")}
+          </.pk_link>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>

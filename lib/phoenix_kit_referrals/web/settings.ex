@@ -63,7 +63,11 @@ defmodule PhoenixKitReferrals.Web.Settings do
     end
   end
 
-  def handle_event("update_max_uses_per_code", %{"max_uses_per_code" => value}, socket) do
+  # `phx-blur` payloads carry the input's current text under "value". The old
+  # template additionally set phx-value-max_uses_per_code={@max_uses_per_code},
+  # which shadowed the typed value with the stale assign — making the field
+  # impossible to actually change. Read "value".
+  def handle_event("update_max_uses_per_code", %{"value" => value}, socket) do
     case Integer.parse(value) do
       {max_uses, _} when max_uses > 0 and max_uses <= 10_000 ->
         case Referrals.set_max_uses_per_code(max_uses) do
@@ -93,7 +97,7 @@ defmodule PhoenixKitReferrals.Web.Settings do
     end
   end
 
-  def handle_event("update_max_codes_per_user", %{"max_codes_per_user" => value}, socket) do
+  def handle_event("update_max_codes_per_user", %{"value" => value}, socket) do
     case Integer.parse(value) do
       {max_codes, _} when max_codes > 0 and max_codes <= 1000 ->
         case Referrals.set_max_codes_per_user(max_codes) do
