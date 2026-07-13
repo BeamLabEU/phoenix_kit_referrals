@@ -69,6 +69,7 @@ defmodule PhoenixKitReferrals do
   """
 
   use Ecto.Schema
+  use PhoenixKit.SchemaPrefix
   use PhoenixKit.Module
   # Gettext macros bound to the module's own catalogs, for the permission
   # metadata label/description (resolved at call time = render time).

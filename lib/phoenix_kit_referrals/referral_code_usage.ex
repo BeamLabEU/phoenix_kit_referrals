@@ -30,6 +30,7 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
       |> Repo.all()
   """
   use Ecto.Schema
+  use PhoenixKit.SchemaPrefix
   import Ecto.Changeset
   import Ecto.Query
 
