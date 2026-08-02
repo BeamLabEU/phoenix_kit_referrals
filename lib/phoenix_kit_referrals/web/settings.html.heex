@@ -33,6 +33,27 @@
               />
             </label>
           </div>
+
+          <%= if @referral_codes_required do %>
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text text-lg">
+                  <span class="font-semibold">{gettext("Grandfather Existing Users")}</span>
+                  <div class="text-sm text-base-content/70 mt-1">
+                    {gettext(
+                      "Accounts created before referrals became required keep their access. Turn this off and they must enter a code too."
+                    )}
+                  </div>
+                </span>
+                <input
+                  type="checkbox"
+                  class="toggle toggle-secondary"
+                  checked={@grandfather_existing}
+                  phx-click="toggle_grandfather_existing"
+                />
+              </label>
+            </div>
+          <% end %>
         <% end %>
       </div>
     </div>

@@ -646,6 +646,32 @@ defmodule PhoenixKitReferrals do
   end
 
   @doc """
+  Whether accounts created before referrals became required keep their access.
+
+  Read by core's invite-only access gate (see the "Invite-only access gate"
+  section of `PhoenixKit.Users.Referrals`), which is what actually enforces it.
+  Defaults to `true`: switching invite-only on should not lock out the people
+  who are already using the site.
+  """
+  def grandfather_existing? do
+    Settings.get_boolean_setting("referral_grandfather_existing", true)
+  end
+
+  @doc """
+  Sets whether accounts created before referrals became required keep access.
+
+      iex> PhoenixKitReferrals.set_grandfather_existing(false)
+      {:ok, %Setting{}}
+  """
+  def set_grandfather_existing(value) when is_boolean(value) do
+    Settings.update_boolean_setting_with_module(
+      "referral_grandfather_existing",
+      value,
+      "referral_codes"
+    )
+  end
+
+  @doc """
   Gets the maximum number of uses allowed per referral code.
 
   Returns the system-wide limit for how many times a single referral code can be used.
