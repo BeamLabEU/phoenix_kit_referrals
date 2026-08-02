@@ -141,6 +141,36 @@ defmodule PhoenixKitReferralsTest do
              end)
     end
 
+    test "generate_random_code/0 draws uniformly across the whole alphabet" do
+      # Guards the `rem(byte, 32)` mapping in generate_random_code/0. It is only
+      # unbiased because 256 divides evenly by the alphabet size; if someone
+      # changes @code_alphabet to a size that does not divide 256, the low
+      # characters get drawn more often and the keyspace quietly shrinks. The
+      # module has a compile-time check for that, and this is the runtime half.
+      alphabet = ~c"ABCDEFGHJKLMNPQRSTUVWXYZ23456789" |> to_string() |> String.graphemes()
+
+      chars =
+        1..4000
+        |> Enum.map_join("", fn _ -> PhoenixKitReferrals.generate_random_code() end)
+        |> String.graphemes()
+
+      freq = Enum.frequencies(chars)
+      expected = div(length(chars), length(alphabet))
+
+      # Every character reachable, none outside the alphabet.
+      assert MapSet.new(Map.keys(freq)) == MapSet.new(alphabet)
+
+      # Uniform within a generous band — wide enough never to flake, tight enough
+      # that a biased mapping (which would roughly double some counts) fails.
+      Enum.each(freq, fn {char, count} ->
+        assert count > expected * 0.6,
+               "#{char} drawn #{count} times, expected ~#{expected} — distribution looks biased"
+
+        assert count < expected * 1.4,
+               "#{char} drawn #{count} times, expected ~#{expected} — distribution looks biased"
+      end)
+    end
+
     test "usage_limit_reached?/1 compares uses against max" do
       refute PhoenixKitReferrals.usage_limit_reached?(%PhoenixKitReferrals{
                number_of_uses: 0,
