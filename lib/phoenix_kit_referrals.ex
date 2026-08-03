@@ -638,11 +638,35 @@ defmodule PhoenixKitReferrals do
       {:ok, %Setting{}}
   """
   def set_required(required) when is_boolean(required) do
-    Settings.update_boolean_setting_with_module(
-      "referral_codes_required",
-      required,
-      "referral_codes"
+    result =
+      Settings.update_boolean_setting_with_module(
+        "referral_codes_required",
+        required,
+        "referral_codes"
+      )
+
+    with {:ok, _} <- result, do: stamp_required_boundary(required)
+
+    result
+  end
+
+  # Records WHEN invite-only took effect, which is the boundary core's access
+  # gate grandfathers against.
+  #
+  # Core stamps this lazily too, on the first gated request after the flip — but
+  # "first gated request" can be a long time after "flip" on a quiet site, and
+  # every account created in that window would be treated as pre-existing and
+  # admitted without a code. Stamping here closes the window; core's lazy stamp
+  # stays as the fallback for an older copy of this package.
+  defp stamp_required_boundary(true) do
+    Settings.update_setting(
+      "referral_required_enabled_at",
+      DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
     )
+  end
+
+  defp stamp_required_boundary(false) do
+    Settings.update_setting("referral_required_enabled_at", nil)
   end
 
   @doc """
