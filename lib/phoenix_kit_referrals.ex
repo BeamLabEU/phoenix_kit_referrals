@@ -90,6 +90,22 @@ defmodule PhoenixKitReferrals do
   @code_alphabet ~c"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
   @code_length 5
 
+  @alphabet_size length(@code_alphabet)
+
+  # `generate_random_code/0` maps each random byte through `rem/2`, which is only
+  # uniform when 256 divides evenly by the alphabet size — otherwise the
+  # low-numbered characters get drawn more often, quietly shrinking the keyspace.
+  # It holds today (256 / 32), and this check makes a future alphabet edit fail
+  # the build instead of silently weakening every code.
+  if rem(256, @alphabet_size) != 0 do
+    raise """
+    @code_alphabet must have a size that divides 256 evenly (got #{@alphabet_size}).
+    Otherwise `rem(byte, size)` in generate_random_code/0 biases the first
+    #{rem(256, @alphabet_size)} characters. Either pick a size of 2, 4, 8, 16, 32,
+    64 or 128, or switch that function to rejection sampling.
+    """
+  end
+
   # Named by core's V04 migration, which does NOT use Ecto's default index name.
   # Passing it explicitly is what makes `unique_constraint/3` actually catch the
   # violation instead of letting Postgrex raise.
@@ -174,13 +190,23 @@ defmodule PhoenixKitReferrals do
   This does not check the code against existing codes — see
   `generate_unique_code/1`.
 
+  Drawn from `:crypto.strong_rand_bytes/1`, not `Enum.random/1`. When
+  `referral_codes_required` is on, a referral code is the only thing standing
+  between a stranger and an account, so the generator has to resist prediction:
+  `:rand` is seeded per process and is not built to stop someone who has seen a
+  few outputs — and codes are handed out by design, including in `?ref=CODE`
+  links. The alphabet and length are unchanged, so existing codes keep working.
+
   ## Examples
 
       iex> PhoenixKitReferrals.generate_random_code()
       "A7B2K"
   """
   def generate_random_code do
-    for _ <- 1..@code_length, into: "", do: <<Enum.random(@code_alphabet)>>
+    @code_length
+    |> :crypto.strong_rand_bytes()
+    |> :binary.bin_to_list()
+    |> Enum.map_join("", &<<Enum.at(@code_alphabet, rem(&1, @alphabet_size))>>)
   end
 
   @doc """
@@ -612,9 +638,59 @@ defmodule PhoenixKitReferrals do
       {:ok, %Setting{}}
   """
   def set_required(required) when is_boolean(required) do
+    result =
+      Settings.update_boolean_setting_with_module(
+        "referral_codes_required",
+        required,
+        "referral_codes"
+      )
+
+    with {:ok, _} <- result, do: stamp_required_boundary(required)
+
+    result
+  end
+
+  # Records WHEN invite-only took effect, which is the boundary core's access
+  # gate grandfathers against.
+  #
+  # Core stamps this lazily too, on the first gated request after the flip — but
+  # "first gated request" can be a long time after "flip" on a quiet site, and
+  # every account created in that window would be treated as pre-existing and
+  # admitted without a code. Stamping here closes the window; core's lazy stamp
+  # stays as the fallback for an older copy of this package.
+  defp stamp_required_boundary(true) do
+    Settings.update_setting(
+      "referral_required_enabled_at",
+      DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+    )
+  end
+
+  defp stamp_required_boundary(false) do
+    Settings.update_setting("referral_required_enabled_at", nil)
+  end
+
+  @doc """
+  Whether accounts created before referrals became required keep their access.
+
+  Read by core's invite-only access gate (see the "Invite-only access gate"
+  section of `PhoenixKit.Users.Referrals`), which is what actually enforces it.
+  Defaults to `true`: switching invite-only on should not lock out the people
+  who are already using the site.
+  """
+  def grandfather_existing? do
+    Settings.get_boolean_setting("referral_grandfather_existing", true)
+  end
+
+  @doc """
+  Sets whether accounts created before referrals became required keep access.
+
+      iex> PhoenixKitReferrals.set_grandfather_existing(false)
+      {:ok, %Setting{}}
+  """
+  def set_grandfather_existing(value) when is_boolean(value) do
     Settings.update_boolean_setting_with_module(
-      "referral_codes_required",
-      required,
+      "referral_grandfather_existing",
+      value,
       "referral_codes"
     )
   end

@@ -24,6 +24,7 @@ defmodule PhoenixKitReferrals.Web.Settings do
       |> assign(:project_title, project_title)
       |> assign(:referral_codes_enabled, referral_codes_config.enabled)
       |> assign(:referral_codes_required, referral_codes_config.required)
+      |> assign(:grandfather_existing, Referrals.grandfather_existing?())
       |> assign(:max_uses_per_code, referral_codes_config.max_uses_per_code)
       |> assign(:max_codes_per_user, referral_codes_config.max_codes_per_user)
 
@@ -60,6 +61,34 @@ defmodule PhoenixKitReferrals.Web.Settings do
           put_flash(socket, :error, gettext("Failed to update referrals requirement setting"))
 
         {:noreply, socket}
+    end
+  end
+
+  # Core owns the invite-only access gate and reads this setting; the toggle
+  # lives here because this is where an operator turns invite-only on, and
+  # deciding what happens to the users who are already signed up is part of
+  # that same decision. See the "Invite-only access gate" section of
+  # `PhoenixKit.Users.Referrals`.
+  def handle_event("toggle_grandfather_existing", _params, socket) do
+    new_value = !socket.assigns.grandfather_existing
+
+    case Referrals.set_grandfather_existing(new_value) do
+      {:ok, _setting} ->
+        socket =
+          socket
+          |> assign(:grandfather_existing, new_value)
+          |> put_flash(
+            :info,
+            if(new_value,
+              do: gettext("Existing users keep their access"),
+              else: gettext("Existing users must now enter a referral code")
+            )
+          )
+
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, gettext("Failed to update grandfathering setting"))}
     end
   end
 
