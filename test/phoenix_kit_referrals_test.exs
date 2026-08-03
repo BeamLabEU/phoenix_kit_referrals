@@ -37,8 +37,26 @@ defmodule PhoenixKitReferralsTest do
     test "matches the package version declared in mix.exs" do
       vsn = :phoenix_kit_referrals |> Application.spec(:vsn) |> to_string()
 
-      assert PhoenixKitReferrals.version() == "0.4.0"
+      assert PhoenixKitReferrals.version() == "0.5.0"
       assert PhoenixKitReferrals.version() == vsn
+    end
+  end
+
+  describe "access_gate_available?/0" do
+    test "tracks whether the installed core exposes the invite-only gate" do
+      # The probe decides whether the settings UI offers the grandfather toggle
+      # at all, so it has to name a function core really has. `~> 1.7` spans
+      # cores from before the gate existed; pointing this at a renamed or
+      # misspelled entry point would silently hide the toggle forever.
+      Code.ensure_loaded!(PhoenixKit.Users.Referrals)
+
+      assert PhoenixKitReferrals.access_gate_available?() ==
+               function_exported?(PhoenixKit.Users.Referrals, :access_required?, 0)
+    end
+
+    test "grandfather accessors are exported for core to read through" do
+      assert function_exported?(PhoenixKitReferrals, :grandfather_existing?, 0)
+      assert function_exported?(PhoenixKitReferrals, :set_grandfather_existing, 1)
     end
   end
 

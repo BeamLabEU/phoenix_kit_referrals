@@ -24,6 +24,7 @@ defmodule PhoenixKitReferrals.Web.Settings do
       |> assign(:project_title, project_title)
       |> assign(:referral_codes_enabled, referral_codes_config.enabled)
       |> assign(:referral_codes_required, referral_codes_config.required)
+      |> assign(:access_gate_available, Referrals.access_gate_available?())
       |> assign(:grandfather_existing, Referrals.grandfather_existing?())
       |> assign(:max_uses_per_code, referral_codes_config.max_uses_per_code)
       |> assign(:max_codes_per_user, referral_codes_config.max_codes_per_user)
@@ -69,6 +70,9 @@ defmodule PhoenixKitReferrals.Web.Settings do
   # deciding what happens to the users who are already signed up is part of
   # that same decision. See the "Invite-only access gate" section of
   # `PhoenixKit.Users.Referrals`.
+  #
+  # Only rendered when the installed core actually has that gate — see
+  # `PhoenixKitReferrals.access_gate_available?/0`.
   def handle_event("toggle_grandfather_existing", _params, socket) do
     new_value = !socket.assigns.grandfather_existing
 

@@ -34,7 +34,7 @@
             </label>
           </div>
 
-          <%= if @referral_codes_required do %>
+          <%= if @referral_codes_required and @access_gate_available do %>
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text text-lg">

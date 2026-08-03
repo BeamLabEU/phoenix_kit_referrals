@@ -44,6 +44,9 @@ defmodule PhoenixKitReferrals do
   - `enable_system/0` - Enable the referral codes system
   - `disable_system/0` - Disable the referral codes system
   - `set_required/1` - Set whether referral codes are required
+  - `grandfather_existing?/0` / `set_grandfather_existing/1` - Whether accounts
+    predating invite-only keep access (enforced by core's access gate)
+  - `access_gate_available?/0` - Whether the installed core has that gate
 
   ## Usage Examples
 
@@ -638,44 +641,43 @@ defmodule PhoenixKitReferrals do
       {:ok, %Setting{}}
   """
   def set_required(required) when is_boolean(required) do
-    result =
-      Settings.update_boolean_setting_with_module(
-        "referral_codes_required",
-        required,
-        "referral_codes"
-      )
-
-    with {:ok, _} <- result, do: stamp_required_boundary(required)
-
-    result
-  end
-
-  # Records WHEN invite-only took effect, which is the boundary core's access
-  # gate grandfathers against.
-  #
-  # Core stamps this lazily too, on the first gated request after the flip — but
-  # "first gated request" can be a long time after "flip" on a quiet site, and
-  # every account created in that window would be treated as pre-existing and
-  # admitted without a code. Stamping here closes the window; core's lazy stamp
-  # stays as the fallback for an older copy of this package.
-  defp stamp_required_boundary(true) do
-    Settings.update_setting(
-      "referral_required_enabled_at",
-      DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+    Settings.update_boolean_setting_with_module(
+      "referral_codes_required",
+      required,
+      "referral_codes"
     )
   end
 
-  defp stamp_required_boundary(false) do
-    Settings.update_setting("referral_required_enabled_at", nil)
+  @doc """
+  Whether the installed core enforces the invite-only access gate.
+
+  The dependency is pinned broadly (`~> 1.7`), and the gate — along with the
+  `referral_grandfather_existing` setting it reads — arrived partway through
+  that range. On an older core the grandfather toggle would be a switch wired
+  to nothing, so the settings UI asks this before offering it.
+
+  Probes the one function the gate is entered through, the same
+  `function_exported?/3` idiom core uses to dispatch back into this module.
+  """
+  def access_gate_available? do
+    Code.ensure_loaded?(PhoenixKit.Users.Referrals) and
+      function_exported?(PhoenixKit.Users.Referrals, :access_required?, 0)
   end
 
   @doc """
   Whether accounts created before referrals became required keep their access.
 
   Read by core's invite-only access gate (see the "Invite-only access gate"
-  section of `PhoenixKit.Users.Referrals`), which is what actually enforces it.
+  section of `PhoenixKit.Users.Referrals`), which is what actually enforces it —
+  this module only stores the operator's answer, and stores it on any core, gate
+  or no gate. See `access_gate_available?/0`.
+
   Defaults to `true`: switching invite-only on should not lock out the people
   who are already using the site.
+
+  Note that core's gate also admits any account holding every enabled
+  permission, whatever this setting says — that exemption is what stops an
+  operator from locking themselves out.
   """
   def grandfather_existing? do
     Settings.get_boolean_setting("referral_grandfather_existing", true)
@@ -793,7 +795,7 @@ defmodule PhoenixKitReferrals do
 
   @impl PhoenixKit.Module
   @doc "Module version, shown on the admin Modules page. Keep in sync with `mix.exs`."
-  def version, do: "0.4.0"
+  def version, do: "0.5.0"
 
   @impl PhoenixKit.Module
   def permission_metadata do

@@ -6,6 +6,35 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-03
+
+### Security
+
+- **Generated referral codes now come from a CSPRNG.** `generate_random_code/0`
+  draws from `:crypto.strong_rand_bytes/1` instead of `Enum.random/1`. `:rand`
+  is seeded per process and is not built to resist an observer, and codes are
+  handed out by design (including in `?ref=CODE` links) — under
+  `referral_codes_required` a predictable code is a predictable way into the
+  site. The alphabet and length are unchanged, so existing codes keep working.
+- A compile-time guard now rejects a `@code_alphabet` whose size does not divide
+  256 evenly, since the `rem(byte, size)` mapping would silently bias toward the
+  low characters and shrink the keyspace. A distribution test covers the runtime
+  half.
+
+### Added
+
+- **Grandfathering toggle for the invite-only access gate.** A new
+  `referral_grandfather_existing` setting (default `true`) records whether
+  accounts created before referrals became required keep their access, with
+  `grandfather_existing?/0` / `set_grandfather_existing/1` and a toggle on the
+  referrals settings page. Core's invite-only access gate is what reads and
+  enforces it — see the "Invite-only access gate" section of
+  `PhoenixKit.Users.Referrals`.
+- `access_gate_available?/0` — whether the installed core actually has that
+  gate. The `phoenix_kit` requirement spans versions from before it existed, so
+  the settings page asks first and hides the grandfathering toggle rather than
+  offering a switch wired to nothing.
+
 ## [0.4.0] - 2026-07-11
 
 ### Added
