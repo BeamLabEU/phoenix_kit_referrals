@@ -39,7 +39,7 @@ Add it to your PhoenixKit host app's deps:
 def deps do
   [
     {:phoenix_kit, "~> 1.7"},
-    {:phoenix_kit_referrals, "~> 0.1"}
+    {:phoenix_kit_referrals, "~> 0.6"}
   ]
 end
 ```
