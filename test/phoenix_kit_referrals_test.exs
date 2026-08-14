@@ -42,6 +42,33 @@ defmodule PhoenixKitReferralsTest do
     end
   end
 
+  describe "signup_use_exists?/1" do
+    test "is the name core's access gate dispatches" do
+      # PhoenixKit.Users.Referrals.historically_redeemed?/1 calls
+      # dispatch(:signup_use_exists?, [user.uuid]). A rename here
+      # silently parks every 0.4-era redeemer: dispatch returns :error
+      # and the gate treats that as "cannot confirm, do not admit".
+      assert function_exported?(PhoenixKitReferrals, :signup_use_exists?, 1)
+
+      assert function_exported?(
+               PhoenixKitReferrals.ReferralCodeUsage,
+               :exists_for_user?,
+               1
+             )
+    end
+
+    test "rejects a non-UUID without hitting the database" do
+      refute PhoenixKitReferrals.signup_use_exists?("not-a-uuid")
+      refute PhoenixKitReferrals.ReferralCodeUsage.exists_for_user?("")
+    end
+
+    test "rejects a non-binary at the function clause" do
+      assert_raise FunctionClauseError, fn ->
+        PhoenixKitReferrals.signup_use_exists?(nil)
+      end
+    end
+  end
+
   describe "access_gate_available?/0" do
     test "tracks whether the installed core exposes the invite-only gate" do
       # The probe decides whether the settings UI offers the grandfather toggle

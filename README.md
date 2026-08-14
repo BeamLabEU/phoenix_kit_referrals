@@ -38,7 +38,7 @@ Add it to your PhoenixKit host app's deps:
 ```elixir
 def deps do
   [
-    {:phoenix_kit, "~> 1.7"},
+    {:phoenix_kit, "~> 2.0"},
     {:phoenix_kit_referrals, "~> 0.6"}
   ]
 end
@@ -56,7 +56,8 @@ automatically. Enable it from **Admin → Modules**.
 
 ## What you get
 
-- **Admin → Users → Referrals** — list, create, edit, and enable/disable codes, with
+- **Admin → Referrals** — its own top-level section (Overview + Codes), not
+  nested under Users. List, create, edit, and enable/disable codes, with
   per-code usage stats.
 - **Admin → Settings → Referrals** — turn the system on, make a code required at signup,
   and cap uses-per-code / codes-per-user.

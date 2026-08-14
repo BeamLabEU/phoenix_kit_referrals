@@ -35,6 +35,7 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
   import Ecto.Query
 
   alias PhoenixKit.Utils.Date, as: UtilsDate
+  alias PhoenixKit.Utils.UUID, as: UUIDUtils
 
   alias PhoenixKitReferrals, as: Referrals
   @primary_key {:uuid, UUIDv7, autogenerate: true}
@@ -151,15 +152,17 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
   end
 
   @doc """
-  Whether ANY usage row exists for this user, across all codes.
+  Whether any usage row exists for this user, across all codes.
 
-  The answer core's access gate needs for accounts that redeemed under
-  referrals 0.4, before the satisfied-stamp existed.
+  Does not care whether the code is still valid — the usage table is an
+  audit trail, so a later expire/revoke still counts as "ever redeemed".
+  Invalid UUIDs return `false` rather than raising.
+
+  Used by `PhoenixKitReferrals.signup_use_exists?/1`.
   """
   def exists_for_user?(user_uuid) when is_binary(user_uuid) do
-    query = from(u in __MODULE__, where: u.used_by_uuid == ^user_uuid, limit: 1)
-
-    PhoenixKit.RepoHelper.repo().exists?(query)
+    UUIDUtils.valid?(user_uuid) and
+      PhoenixKit.RepoHelper.repo().exists?(for_user(user_uuid))
   end
 
   @doc """

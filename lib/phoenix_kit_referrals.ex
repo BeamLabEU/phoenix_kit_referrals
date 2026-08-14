@@ -37,6 +37,8 @@ defmodule PhoenixKitReferrals do
   - `get_usage_stats/1` - Get usage statistics for a code
   - `list_usage_for_code/1` - Get all usage records for a code
   - `user_used_code?/2` - Check if user has used a specific code
+  - `signup_use_exists?/1` - Whether this user has ever redeemed any code
+    (the name core's access gate dispatches)
 
   ### System Settings
   - `enabled?/0` - Check if referral codes system is enabled
@@ -540,14 +542,16 @@ defmodule PhoenixKitReferrals do
   end
 
   @doc """
-  Whether this user has EVER redeemed a referral code.
+  Whether this user has ever redeemed any referral code.
 
-  Exists for core's access gate: accounts that redeemed a code under
-  referrals 0.4 have a usage row but no `referral_satisfied_at` stamp —
-  the stamp arrived with 0.6's flows — and without this answer the gate
-  parks exactly the users who did what invite-only asked of them. Core
-  calls it through the module facade and lazily stamps on `true`, so for
-  any given account it runs at most once.
+  Answers from the usage table, not from whether the code is still
+  active. A user who redeemed a code that is now expired, inactive, or
+  exhausted still returns `true`. Invalid UUIDs return `false`.
+
+  Core's invite-only access gate calls this (by this exact name) for
+  accounts that have no `referral_satisfied_at` stamp — typically people
+  who redeemed under referrals 0.4, before the stamp existed — and
+  stamps on `true`, so each account pays the query at most once.
   """
   def signup_use_exists?(user_uuid) when is_binary(user_uuid) do
     ReferralCodeUsage.exists_for_user?(user_uuid)
@@ -665,13 +669,11 @@ defmodule PhoenixKitReferrals do
   @doc """
   Whether the installed core enforces the invite-only access gate.
 
-  The dependency is pinned broadly (`~> 1.7`), and the gate — along with the
-  `referral_grandfather_existing` setting it reads — arrived partway through
-  that range. On an older core the grandfather toggle would be a switch wired
-  to nothing, so the settings UI asks this before offering it.
-
-  Probes the one function the gate is entered through, the same
-  `function_exported?/3` idiom core uses to dispatch back into this module.
+  The grandfather toggle is only meaningful when the installed core
+  exposes the invite-only access gate. This probes
+  `PhoenixKit.Users.Referrals.access_required?/0` the same way core
+  dispatches back into this module, so a rename on either side hides
+  the toggle rather than offering a switch wired to nothing.
   """
   def access_gate_available? do
     Code.ensure_loaded?(PhoenixKit.Users.Referrals) and
