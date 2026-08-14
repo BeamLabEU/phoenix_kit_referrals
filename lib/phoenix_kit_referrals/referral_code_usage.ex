@@ -151,6 +151,18 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
   end
 
   @doc """
+  Whether ANY usage row exists for this user, across all codes.
+
+  The answer core's access gate needs for accounts that redeemed under
+  referrals 0.4, before the satisfied-stamp existed.
+  """
+  def exists_for_user?(user_uuid) when is_binary(user_uuid) do
+    query = from(u in __MODULE__, where: u.used_by_uuid == ^user_uuid, limit: 1)
+
+    PhoenixKit.RepoHelper.repo().exists?(query)
+  end
+
+  @doc """
   Gets usage statistics for a referral code.
 
   Returns a map with usage counts and recent activity information.

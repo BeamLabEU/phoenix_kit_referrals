@@ -540,6 +540,20 @@ defmodule PhoenixKitReferrals do
   end
 
   @doc """
+  Whether this user has EVER redeemed a referral code.
+
+  Exists for core's access gate: accounts that redeemed a code under
+  referrals 0.4 have a usage row but no `referral_satisfied_at` stamp —
+  the stamp arrived with 0.6's flows — and without this answer the gate
+  parks exactly the users who did what invite-only asked of them. Core
+  calls it through the module facade and lazily stamps on `true`, so for
+  any given account it runs at most once.
+  """
+  def signup_use_exists?(user_uuid) when is_binary(user_uuid) do
+    ReferralCodeUsage.exists_for_user?(user_uuid)
+  end
+
+  @doc """
   Lists all usage records for a referral code.
 
   ## Examples
