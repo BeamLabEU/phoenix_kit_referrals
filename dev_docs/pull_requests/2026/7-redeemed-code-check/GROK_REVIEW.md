@@ -106,10 +106,8 @@ redeemer until core is updated in lockstep.
 
 ## Version / release
 
-Left at `0.6.1`. This is a new public function plus a production-facing
-contract with core; the Hex release should be at least `0.6.2` (Unreleased
-entry is ready to retitle). Not bumped in this review commit so the version
-bump can be its own "Bump version to …" commit per the release checklist.
+Shipped as `0.6.2` (patch). New public function, but the scope is a single
+predicate for a core access-gate bugfix, so a minor bump would overstate it.
 
 ## Gate
 

@@ -4,14 +4,15 @@ All notable changes to **PhoenixKitReferrals** are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## 0.6.2 - 2026-08-14
 
 ### Added
 
 - `signup_use_exists?/1` / `ReferralCodeUsage.exists_for_user?/1` — whether a
   user has ever redeemed any referral code. Core's invite-only access gate
   uses this to lazily stamp accounts that redeemed under referrals 0.4,
-  which have a usage row but no `referral_satisfied_at`.
+  which have a usage row but no `referral_satisfied_at`. Invalid UUIDs
+  return `false` rather than raising.
 
 ## 0.6.1 - 2026-08-11
 
