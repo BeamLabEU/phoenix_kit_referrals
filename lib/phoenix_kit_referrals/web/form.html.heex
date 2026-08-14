@@ -22,7 +22,7 @@
         class="space-y-6"
       >
         <%!-- Code Field with Generate Button --%>
-        <div class="form-control">
+        <div class="fieldset">
           <.input
             field={form[:code]}
             type="text"
@@ -42,7 +42,7 @@
         </div>
 
         <%!-- Description Field --%>
-        <div class="form-control">
+        <div class="fieldset">
           <.input
             field={form[:description]}
             type="text"
@@ -53,9 +53,9 @@
         </div>
 
         <%!-- Beneficiary Field --%>
-        <div class="form-control">
+        <div class="fieldset">
           <label class="label">
-            <span class="label-text font-semibold">{gettext("Beneficiary User")}</span>
+            <span class="fieldset-legend font-semibold">{gettext("Beneficiary User")}</span>
           </label>
 
           <%= if @selected_beneficiary do %>
@@ -99,7 +99,7 @@
             <div class="relative">
               <input
                 type="text"
-                class="input input-bordered w-full"
+                class="input w-full"
                 placeholder={gettext("Search users by email, username, or name...")}
                 phx-change="search_beneficiary"
                 phx-debounce="300"
@@ -136,14 +136,14 @@
           <% end %>
 
           <label class="mt-2 label">
-            <span class="label-text-alt text-base-content/70">
+            <span class="fieldset-label text-base-content/70">
               {gettext("Optional: Search and select a user who will benefit from this referral")}
             </span>
           </label>
         </div>
 
         <%!-- Maximum Uses Field --%>
-        <div class="form-control">
+        <div class="fieldset">
           <.input
             field={form[:max_uses]}
             type="number"
@@ -153,28 +153,28 @@
             required
           />
           <label class="mt-2 label">
-            <span class="label-text-alt text-base-content/70">
+            <span class="fieldset-label text-base-content/70">
               {gettext("Set how many users can register using this referral")}
             </span>
           </label>
         </div>
 
         <%!-- Expiration Date Field --%>
-        <div class="form-control">
+        <div class="fieldset">
           <.input
             field={form[:expiration_date]}
             type="datetime-local"
             label={gettext("Expiration Date")}
           />
           <label class="mt-2 label">
-            <span class="label-text-alt text-base-content/70">
+            <span class="fieldset-label text-base-content/70">
               {gettext("Leave empty for no expiration")}
             </span>
           </label>
         </div>
 
         <%!-- Active Status Toggle --%>
-        <div class="form-control">
+        <div class="fieldset">
           <.checkbox field={form[:status]} label={gettext("Is active?")} />
 
           <span class="mt-2 label text-base-content/70">
