@@ -186,7 +186,19 @@ defmodule PhoenixKitReferrals.ReferralCodeUsage do
     base_query = from(u in __MODULE__, where: u.code_uuid == ^code_uuid)
 
     total_uses = repo.aggregate(base_query, :count)
-    unique_users = repo.aggregate(base_query, :count, :used_by_uuid, distinct: true)
+
+    # NOT `repo.aggregate(base_query, :count, :used_by_uuid, distinct: true)`.
+    # `aggregate/4`'s last argument is REPO options (`:prefix`, `:timeout`, …),
+    # never query modifiers — `Ecto.Repo.Queryable.query_for_aggregate/3` builds
+    # the select from the field alone and never sees them, so `distinct: true`
+    # was accepted and silently ignored. This counted ROWS, making
+    # `unique_users` identical to `total_uses` for every code: one person
+    # redeeming three times reported three unique users. Same defect, and the
+    # same fix, as phoenix_kit's session stats in 2.14.1.
+    unique_users =
+      base_query
+      |> select([u], count(u.used_by_uuid, :distinct))
+      |> repo.one()
 
     last_used_query =
       from(u in base_query,
