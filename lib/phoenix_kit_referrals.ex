@@ -799,6 +799,16 @@ defmodule PhoenixKitReferrals do
     }
   end
 
+  @doc "Returns stats for the module card on the admin Modules page."
+  def module_stats do
+    config = get_config()
+
+    [
+      %{label: gettext("Max per user"), value: config[:max_codes_per_user]},
+      %{label: gettext("Max uses"), value: config[:max_uses_per_code]}
+    ]
+  end
+
   # ============================================================================
   # Module Behaviour Callbacks
   # ============================================================================
