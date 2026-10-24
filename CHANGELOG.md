@@ -4,6 +4,28 @@ All notable changes to **PhoenixKitReferrals** are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.7.0 - 2026-10-24
+
+### Added
+
+- `module_stats/0` — the "Max per user" and "Max uses" figures for this
+  module's card on the admin Modules page. Core renders the card through its
+  generic external-module card, which reads `module_stats/0` when present,
+  instead of its own hardcoded Referral Codes card.
+
+### Fixed
+
+- **`unique_users` in `get_usage_stats/1` counted usage rows, not people.**
+  `distinct: true` was passed as a `Repo.aggregate/4` option, which Ecto
+  accepts and ignores, so `unique_users` always equalled `total_uses`: one
+  person redeeming a code three times showed as three unique users. The count
+  is now `count(used_by_uuid, :distinct)` in the query itself.
+
+### Changed
+
+- Dependency refresh: `phoenix_kit` 2.64.1 and its transitive set (including
+  `mint` 1.10.0, which fixes EEF-CVE-2026-82728 and EEF-CVE-2026-82729).
+
 ## 0.6.2 - 2026-08-14
 
 ### Added

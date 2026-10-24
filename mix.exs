@@ -1,7 +1,7 @@
 defmodule PhoenixKitReferrals.MixProject do
   use Mix.Project
 
-  @version "0.6.2"
+  @version "0.7.0"
   @source_url "https://github.com/BeamLabEU/phoenix_kit_referrals"
 
   def project do
