@@ -9,11 +9,11 @@ per-user limits, track usage, and (optionally) require or apply a code at user
 registration. Implements the `PhoenixKit.Module` behaviour for auto-discovery by a
 parent Phoenix application.
 
-This module was **extracted from PhoenixKit core**. The two referral tables
-(`phoenix_kit_referral_codes`, `phoenix_kit_referral_code_usage`) are still created and
-owned by PhoenixKit core's versioned migrations — this package ships only the schemas,
-the business logic, and the admin UI that read/write them. Installing the package is
-enough; there is no module-owned migration step.
+This module was **extracted from PhoenixKit core**. Core's versioned migrations still
+create the two referral tables (`phoenix_kit_referral_codes`,
+`phoenix_kit_referral_code_usage`), but their shape is this module's:
+`PhoenixKitReferrals.Migrations` (its V1 adopts them) is where every change goes.
+`mix phoenix_kit.update` runs it after core's chain; nothing to do by hand.
 
 ## Common Commands
 
@@ -21,6 +21,7 @@ enough; there is no module-owned migration step.
 mix deps.get                # Install dependencies
 mix test                    # Run all tests
 mix test test/phoenix_kit_referrals_test.exs  # Run a specific test file
+createdb phoenix_kit_referrals_test           # once; the migration tests need it (excluded without it)
 mix format                  # Format code (imports Phoenix LiveView rules)
 mix credo --strict          # Static analysis / linting
 mix dialyzer                # Type checking
@@ -44,6 +45,7 @@ host app's repo via `PhoenixKit.RepoHelper.repo/0`.
 lib/
   phoenix_kit_referrals.ex                     # Main module — ReferralCode schema + context + PhoenixKit.Module behaviour
   phoenix_kit_referrals/
+    migrations.ex                              # Own migration chain (V1 adopts the two core-created tables)
     referral_code_usage.ex                     # ReferralCodeUsage schema + usage queries/stats
     paths.ex                                   # Centralized URL path helpers
     routes.ex                                  # Admin route macros (admin_routes/0, admin_locale_routes/0)
@@ -104,15 +106,41 @@ module absent the registration field simply doesn't appear.
 Booleans/integers are written through `Settings.update_boolean_setting_with_module/3`
 and `Settings.update_setting_with_module/3` with the module tag `"referral_codes"`.
 
-### Database Tables (owned by PhoenixKit core)
+### Database tables and migrations
 
-- `phoenix_kit_referral_codes` — referral codes (UUIDv7 PK), with `created_by_uuid` /
-  `beneficiary_uuid` FKs to `phoenix_kit_users` and a `has_many` to usage records.
-- `phoenix_kit_referral_code_usage` — one row per (code, user) usage event.
+- `phoenix_kit_referral_codes` — referral codes (UUIDv7 PK); `created_by_uuid` /
+  `beneficiary_uuid` hold user uuids (Ecto associations to `phoenix_kit_users`, with no
+  database foreign key), and a `has_many` to usage records.
+- `phoenix_kit_referral_code_usage` — one row per (code, user) usage event; its
+  `code_uuid` is the one database foreign key (`fk_referral_code_usage_code_uuid`,
+  `ON DELETE CASCADE`).
 
-Both are created by core's versioned migrations. **This package ships no DDL** — do not
-add a `migration_module/0` or migration files here. New columns/tables go into a core
-`Vxxx` migration.
+**`PhoenixKitReferrals.Migrations`** is the module's versioned chain (`migration_module/0`),
+marker `pkref_schema:<N>` as a `COMMENT ON TABLE` on `phoenix_kit_referral_codes` (none
+reads as 0), currently **V1**. The SQL is data (`up_statements/2`, `down_statements/2`);
+`up/1` / `down/1` `execute/1` it, so they only work inside an `Ecto.Migration` run.
+
+- **V1 adopts the two tables core's chain creates**, exactly as a fresh core install builds
+  them (core's V135 baseline; no later core version reshapes them), with core's names. On
+  existing installs only the marker is new; where core no longer creates the tables, the
+  same statements create them.
+- **A change to these tables is a new version here, never a core migration** — core refuses
+  one since V223 (its `PhoenixKit.Migrations.ModuleOwnedTables`; plan: core's
+  `dev_docs/plans/2026-10-25-module-table-ownership.md`). Until core's `ExpectedSchema` hands
+  the tables over, a version that reshapes an object the manifest declares must take it out
+  of the manifest first, or `mix phoenix_kit.repair` restores the old shape; one that only
+  adds objects the manifest never names needs no core step.
+- **Never edit a shipped version's statements**: append behind `target >= N` in
+  `up_statements/2` and bump `@current_version`. **`down/1` never drops a table**
+  (`migrations_test.exs` asserts no emitted statement matches `DROP|TRUNCATE|DELETE`).
+- **Tests:** `test/phoenix_kit_referrals/migrations_test.exs` pins every table, index and
+  constraint name, the FK's delete action and prefix threading, and checks the statements
+  against core's manifest; `test/integration/migrations_build_alone_test.exs` runs core's
+  `PhoenixKit.TestSupport.ModuleChainCheck` (core after 2.64.1) to prove the chain builds the
+  tables without core. They use `PhoenixKitReferrals.Test.Repo` (`test/support/test_repo.ex`)
+  against `phoenix_kit_referrals_test`; `test_helper.exs` builds core's chain with
+  `ensure_current/2`, replays `up_statements/1`, and excludes `:integration` without a
+  database.
 
 ## Critical Conventions
 

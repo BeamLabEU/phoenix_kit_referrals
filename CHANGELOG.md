@@ -4,6 +4,19 @@ All notable changes to **PhoenixKitReferrals** are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- The module's own migration chain, `PhoenixKitReferrals.Migrations`
+  (`migration_module/0`). V1 adopts the two referral tables core's chain
+  creates, exactly as a fresh core install builds them, and stamps a
+  `pkref_schema:1` marker. Nothing changes on an existing install but the
+  marker; from now on a change to these tables ships here instead of in core. A
+  test proves the chain builds the tables without core (core's
+  `PhoenixKit.TestSupport.ModuleChainCheck`), with a small test database setup
+  the suite did not have before.
+
 ## 0.7.0 - 2026-10-24
 
 ### Added

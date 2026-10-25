@@ -824,6 +824,9 @@ defmodule PhoenixKitReferrals do
   def version, do: "0.7.0"
 
   @impl PhoenixKit.Module
+  def migration_module, do: PhoenixKitReferrals.Migrations
+
+  @impl PhoenixKit.Module
   def permission_metadata do
     %{
       key: "referrals",
