@@ -826,6 +826,13 @@ defmodule PhoenixKitReferrals do
   @impl PhoenixKit.Module
   def migration_module, do: PhoenixKitReferrals.Migrations
 
+  @doc """
+  The manifest of this module's tables, for `mix phoenix_kit.repair` and
+  `mix phoenix_kit.doctor`; see `PhoenixKitReferrals.ExpectedSchema`.
+  """
+  # No `@impl`, so this compiles against a core that lacks the callback.
+  def expected_schema, do: PhoenixKitReferrals.ExpectedSchema
+
   @impl PhoenixKit.Module
   def permission_metadata do
     %{
