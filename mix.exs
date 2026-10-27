@@ -78,7 +78,9 @@ defmodule PhoenixKitReferrals.MixProject do
       # pk_dep/3 keeps a plain Hex pin by default (so published builds + CI are
       # unchanged) but swaps in a local path dep when PHOENIX_KIT_PATH is set —
       # see the helper above. This matches the sibling modules + the template.
-      pk_dep(:phoenix_kit, "~> 2.0"),
+      # Floor 2.65.0: the first core with the `file_references/0` and `expected_schema/0`
+      # callbacks this module implements (`@impl`). The ceiling is open through core 3.x.
+      pk_dep(:phoenix_kit, ">= 2.65.0 and < 4.0.0"),
 
       # LiveView is needed for the admin pages.
       {:phoenix_live_view, "~> 1.1"},
