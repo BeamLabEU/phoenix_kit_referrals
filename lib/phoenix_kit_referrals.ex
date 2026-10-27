@@ -821,7 +821,7 @@ defmodule PhoenixKitReferrals do
 
   @impl PhoenixKit.Module
   @doc "Module version, shown on the admin Modules page. Keep in sync with `mix.exs`."
-  def version, do: "0.7.0"
+  def version, do: "0.8.0"
 
   @impl PhoenixKit.Module
   def migration_module, do: PhoenixKitReferrals.Migrations
