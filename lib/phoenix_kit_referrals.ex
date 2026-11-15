@@ -923,10 +923,9 @@ defmodule PhoenixKitReferrals do
   @doc "OTP apps whose templates Tailwind should scan for CSS classes."
   def css_sources, do: [:phoenix_kit_referrals]
 
-  # No `@impl` on purpose — older core releases don't declare the `js_sources/0`
-  # callback, and annotating it would warn (and fail `--warnings-as-errors`).
   # Core's `:phoenix_kit_js_sources` compiler folds this into the host's module
-  # JS bundle where present. (Mirrors `phoenix_kit_crm`.)
+  # JS bundle.
+  @impl PhoenixKit.Module
   @doc """
   Ships the referral-link capture script (URL `?referral=` -> localStorage ->
   auto-filled `referral_code` field / OAuth links) via PhoenixKit's JS bundle

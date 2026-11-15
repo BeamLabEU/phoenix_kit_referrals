@@ -136,7 +136,7 @@ reads as 0), currently **V1**. The SQL is data (`up_statements/2`, `down_stateme
 - **Tests:** `test/phoenix_kit_referrals/migrations_test.exs` pins every table, index and
   constraint name, the FK's delete action and prefix threading, and checks the statements
   against core's manifest; `test/integration/migrations_build_alone_test.exs` runs core's
-  `PhoenixKit.TestSupport.ModuleChainCheck` (core after 2.64.1) to prove the chain builds the
+  `PhoenixKit.TestSupport.ModuleChainCheck` to prove the chain builds the
   tables without core. They use `PhoenixKitReferrals.Test.Repo` (`test/support/test_repo.ex`)
   against `phoenix_kit_referrals_test`; `test_helper.exs` builds core's chain with
   `ensure_current/2`, replays `up_statements/1`, and excludes `:integration` without a

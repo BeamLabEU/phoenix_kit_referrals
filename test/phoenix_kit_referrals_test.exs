@@ -50,6 +50,10 @@ defmodule PhoenixKitReferralsTest do
       # and the gate treats that as "cannot confirm, do not admit".
       assert function_exported?(PhoenixKitReferrals, :signup_use_exists?, 1)
 
+      # function_exported?/3 does not load the module: without this the
+      # assertion depends on whether an earlier test already loaded it.
+      Code.ensure_loaded!(PhoenixKitReferrals.ReferralCodeUsage)
+
       assert function_exported?(
                PhoenixKitReferrals.ReferralCodeUsage,
                :exists_for_user?,

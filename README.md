@@ -38,7 +38,7 @@ Add it to your PhoenixKit host app's deps:
 ```elixir
 def deps do
   [
-    {:phoenix_kit, "~> 2.0"},
+    {:phoenix_kit, ">= 3.5.0 and < 4.0.0"},
     {:phoenix_kit_referrals, "~> 0.6"}
   ]
 end
